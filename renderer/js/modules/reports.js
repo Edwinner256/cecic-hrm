@@ -590,8 +590,8 @@ const Reports = {
       // ── Footer ──────────────────────────────────────────────
       html += `
   <div class="footer">
-    <strong>${Utils.escapeHtml(company.name)}</strong> &mdash; Confidential Financial Report &mdash; ${periodLabel}
-    ${company.address ? `<br/>${Utils.escapeHtml(company.address)}` : ''}
+    CECIC, ${Utils.escapeHtml(company.name)} &mdash; Confidential Financial Report &mdash; ${periodLabel}<br/>
+    ${company.address ? Utils.escapeHtml(company.address) : 'P.O. Box 12345, Kampala, Uganda'}
   </div>
 </body>
 </html>`;
