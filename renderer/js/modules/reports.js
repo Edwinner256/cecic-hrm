@@ -47,6 +47,13 @@ const Reports = {
             <p>Category-wise expense breakdown</p>
           </div>
         </div>
+        <div class="stat-card" style="cursor:pointer" onclick="Reports.showFinancialReportForm()">
+          <div class="stat-icon purple" style="background:#f3e8ff;color:#7c3aed"><i class="bi bi-calculator-fill"></i></div>
+          <div class="stat-info">
+            <h3>Monthly Financial Summary</h3>
+            <p>Salaries, expenses & unforeseen costs</p>
+          </div>
+        </div>
       </div>
 
       <div id="reportOutput" class="mt-24" style="display:none"></div>
@@ -321,6 +328,305 @@ const Reports = {
     } catch (err) {
       console.error('Category report error:', err);
       Utils.toast('Error generating report: ' + err.message, 'error');
+    }
+  },
+
+  showFinancialReportForm() {
+    const { month: curMonth, year: curYear } = Utils.getCurrentPeriod();
+
+    const output = document.getElementById('reportOutput');
+    if (!output) return;
+
+    output.style.display = 'block';
+    output.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="bi bi-calculator-fill"></i> Monthly Financial Summary</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-row" style="align-items:flex-end">
+            <div class="form-group">
+              <label>Month</label>
+              <select class="form-control" id="finMonth">
+                ${[1,2,3,4,5,6,7,8,9,10,11,12].map(m =>
+                  `<option value="${m}" ${m === curMonth ? 'selected' : ''}>${Utils.getMonthName(m)}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Year</label>
+              <select class="form-control" id="finYear">
+                ${[2025, 2026, 2027, 2028].map(y =>
+                  `<option value="${y}" ${y === curYear ? 'selected' : ''}>${y}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-primary" onclick="Reports.generateMonthlyFinancialReport()" style="margin-bottom:2px">
+                <i class="bi bi-calculator-fill"></i> Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  async generateMonthlyFinancialReport() {
+    try {
+      const month = parseInt(document.getElementById('finMonth').value);
+      const year = parseInt(document.getElementById('finYear').value);
+      const company = await Utils.getCompanyInfo();
+      const periodLabel = `${Utils.getMonthName(month)} ${year}`;
+
+      // ── Payroll Data ────────────────────────────────────────
+      const allPayroll = await DB.getPayrollRecords();
+      const payrollRecords = allPayroll.filter(r => r.month === month && r.year === year);
+
+      const totalBasic = payrollRecords.reduce((s, r) => s + Number(r.basicSalary), 0);
+      const totalAllowances = payrollRecords.reduce((s, r) => s + Number(r.allowances), 0);
+      const totalDeductions = payrollRecords.reduce((s, r) => s + Number(r.deductions), 0);
+      const totalNetPay = payrollRecords.reduce((s, r) => s + Number(r.netPay), 0);
+      const totalPaid = payrollRecords.filter(r => r.status === 'paid').reduce((s, r) => s + Number(r.netPay), 0);
+      const payrollPending = payrollRecords.filter(r => r.status === 'pending');
+
+      // ── Expense Data ────────────────────────────────────────
+      const allExpenses = await DB.getExpenses();
+      const monthStr = String(month).padStart(2, '0');
+      const yearStr = String(year);
+      const expenseRecords = allExpenses.filter(r => {
+        // Match expenses whose date falls in the selected month/year
+        if (!r.date) return false;
+        const parts = r.date.split('-');
+        return parts.length >= 2 && parts[0] === yearStr && parts[1] === monthStr;
+      });
+
+      // Group approved expenses by category
+      const approvedExpenses = expenseRecords.filter(r => r.status === 'approved');
+      const categories = {};
+      approvedExpenses.forEach(r => {
+        const cat = r.category || 'Other';
+        if (!categories[cat]) categories[cat] = { count: 0, total: 0 };
+        categories[cat].count++;
+        categories[cat].total += Number(r.amount);
+      });
+
+      const totalApprovedExpenses = approvedExpenses.reduce((s, r) => s + Number(r.amount), 0);
+      const totalPendingExpenses = expenseRecords.filter(r => r.status === 'pending').reduce((s, r) => s + Number(r.amount), 0);
+
+      // Unforeseen = "Other" category expenses
+      const unforeseenExpenses = approvedExpenses.filter(r => (r.category || 'Other') === 'Other');
+      const totalUnforeseen = unforeseenExpenses.reduce((s, r) => s + Number(r.amount), 0);
+
+      // ── Build Payroll Table ─────────────────────────────────
+      const payrollHeaders = ['Employee', 'Basic Salary', 'Allowances', 'Deductions', 'Net Pay', 'Status'];
+      const payrollRows = payrollRecords.map(r => [
+        r.employeeName,
+        Utils.formatCurrency(r.basicSalary),
+        Utils.formatCurrency(r.allowances),
+        Utils.formatCurrency(r.deductions),
+        Utils.formatCurrency(r.netPay),
+        r.status.toUpperCase()
+      ]);
+
+      // ── Build Expense Category Table ────────────────────────
+      const expenseHeaders = ['Category', 'Claims', 'Amount', '% of Total'];
+      const expenseRows = Object.entries(categories).map(([cat, data]) => [
+        cat,
+        String(data.count),
+        Utils.formatCurrency(data.total),
+        totalApprovedExpenses > 0 ? ((data.total / totalApprovedExpenses) * 100).toFixed(1) + '%' : '0%'
+      ]);
+
+      // ── Build Summary Section ───────────────────────────────
+      const totalExpenditure = totalNetPay + totalApprovedExpenses;
+      const payrollCount = payrollRecords.length;
+      const expenseCount = approvedExpenses.length;
+
+      // Summary rows for the report footer/overview
+      const summaryItems = [
+        { label: 'Payroll Summary', value: '', header: true },
+        { label: '  Employees on Payroll', value: String(payrollCount) },
+        { label: '  Total Basic Salaries', value: Utils.formatCurrency(totalBasic) },
+        { label: '  Total Allowances', value: Utils.formatCurrency(totalAllowances) },
+        { label: '  Total Deductions', value: Utils.formatCurrency(totalDeductions) },
+        { label: '  Net Salaries Paid', value: Utils.formatCurrency(totalNetPay), bold: true },
+        { label: '', value: '', spacer: true },
+        { label: 'Expense Summary', value: '', header: true },
+        { label: '  Total Approved Expenses', value: Utils.formatCurrency(totalApprovedExpenses), bold: true },
+        { label: '    of which Unforeseen (Other)', value: Utils.formatCurrency(totalUnforeseen), indent: true },
+        { label: '  Pending Expenses', value: Utils.formatCurrency(totalPendingExpenses) },
+        { label: '', value: '', spacer: true },
+        { label: 'GRAND TOTAL (Salaries + Expenses)', value: Utils.formatCurrency(totalExpenditure), grandTotal: true },
+      ];
+
+      if (payrollPending.length > 0) {
+        summaryItems.push({ label: '', value: '', spacer: true });
+        summaryItems.push({ label: `⚠ ${payrollPending.length} payroll record(s) still pending`, value: '', warning: true });
+      }
+
+      // ── Build Full Report HTML ──────────────────────────────
+      const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+      const logoHtml = company.logo
+        ? `<img src="${Utils.escapeHtml(company.logo)}" style="height:60px;margin-bottom:10px" alt="Company Logo" />`
+        : '';
+
+      let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Monthly Financial Summary - ${periodLabel}</title>
+  <style>
+    @page { margin: 18mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1a2e05; padding: 20px; }
+    .header { text-align: center; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 3px solid #166534; }
+    .header h1 { font-size: 22px; margin: 4px 0; color: #166534; }
+    .header h2 { font-size: 16px; margin: 4px 0; color: #7c3aed; font-weight: 500; }
+    .header .address { font-size: 11px; color: #57534e; margin-top: 4px; }
+    .meta { display: flex; justify-content: space-between; font-size: 11px; color: #57534e; margin-bottom: 20px; padding: 8px 14px; background: #f0fdf4; border-radius: 6px; }
+    .section-title { font-size: 15px; font-weight: 700; color: #166534; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #d4d4d4; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    th { background: #166534; color: #fff; padding: 7px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+    tr:nth-child(even) td { background: #f0fdf4; }
+    .summary-table td { border: none; padding: 5px 10px; }
+    .summary-table tr:nth-child(even) td { background: transparent; }
+    .summary-table .header-row td { font-weight: 700; color: #166534; font-size: 13px; padding-top: 14px; border-bottom: 1px solid #166534; }
+    .summary-table .bold-row td { font-weight: 700; }
+    .summary-table .grand-total td { font-weight: 800; font-size: 14px; color: #166534; border-top: 2px solid #166534; padding-top: 10px; }
+    .summary-table .indent td { padding-left: 28px; color: #7c3aed; }
+    .summary-table .warning td { color: #dc2626; font-style: italic; font-size: 11px; }
+    .summary-table .spacer td { padding: 2px; }
+    .footer { text-align: center; margin-top: 28px; padding-top: 14px; border-top: 1px solid #d4d4d4; font-size: 11px; color: #57534e; }
+    .summary-box { background: #f0fdf4; border: 1px solid #166534; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .summary-box .line { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+    .summary-box .line.total { font-weight: 800; font-size: 16px; color: #166534; border-top: 2px solid #166534; margin-top: 6px; padding-top: 8px; }
+    .unforeseen { color: #7c3aed; font-weight: 600; }
+    @media print { body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    ${logoHtml}
+    <h1>${Utils.escapeHtml(company.name)}</h1>
+    <h2>Monthly Financial Summary</h2>
+    <div>${periodLabel}</div>
+    ${company.address ? `<div class="address">${Utils.escapeHtml(company.address)}</div>` : ''}
+  </div>
+  <div class="meta">
+    <span>Generated: ${dateStr}</span>
+    ${company.phone ? `<span>${Utils.escapeHtml(company.phone)}</span>` : ''}
+    ${company.email ? `<span>${Utils.escapeHtml(company.email)}</span>` : ''}
+  </div>`;
+
+      // ── Payroll Section ─────────────────────────────────────
+      if (payrollRecords.length > 0) {
+        html += `
+  <div class="section-title">📋 Payroll Register — ${periodLabel}</div>
+  <table>
+    <thead><tr>${payrollHeaders.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${payrollRows.map(row => `<tr>${row.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}
+      <tr style="font-weight:700;background:#f0fdf4">
+        <td>TOTAL</td>
+        <td>${Utils.formatCurrency(totalBasic)}</td>
+        <td>${Utils.formatCurrency(totalAllowances)}</td>
+        <td>${Utils.formatCurrency(totalDeductions)}</td>
+        <td>${Utils.formatCurrency(totalNetPay)}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>`;
+      } else {
+        html += `<div style="background:#fef2f2;padding:12px;border-radius:6px;color:#dc2626;margin:16px 0">No payroll records found for ${periodLabel}.</div>`;
+      }
+
+      // ── Expense Section ─────────────────────────────────────
+      if (approvedExpenses.length > 0) {
+        html += `
+  <div class="section-title">📄 Approved Expenses — ${periodLabel}</div>
+  <table>
+    <thead><tr>${expenseHeaders.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${expenseRows.map(row => `<tr>${row.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}
+      <tr style="font-weight:700;background:#f0fdf4">
+        <td>TOTAL</td>
+        <td>${approvedExpenses.length}</td>
+        <td>${Utils.formatCurrency(totalApprovedExpenses)}</td>
+        <td>100%</td>
+      </tr>
+    </tbody>
+  </table>`;
+
+        if (totalUnforeseen > 0) {
+          html += `<div style="margin:8px 0;padding:8px 12px;background:#f3e8ff;border-radius:6px;color:#7c3aed;font-size:12px">
+            ⚡ <strong>Unforeseen Expenses:</strong> ${Utils.formatCurrency(totalUnforeseen)} (${((totalUnforeseen / totalApprovedExpenses) * 100).toFixed(1)}% of total expenses — categorized as "Other")
+          </div>`;
+        }
+      } else {
+        html += `<div style="background:#fef2f2;padding:12px;border-radius:6px;color:#dc2626;margin:16px 0">No approved expenses found for ${periodLabel}.</div>`;
+      }
+
+      // ── Financial Summary Box ───────────────────────────────
+      html += `
+  <div class="section-title">💰 Financial Summary — ${periodLabel}</div>
+  <div class="summary-box">
+    <div class="line"><span>Total Basic Salaries</span><span>${Utils.formatCurrency(totalBasic)}</span></div>
+    <div class="line"><span>Total Allowances</span><span>${Utils.formatCurrency(totalAllowances)}</span></div>
+    <div class="line"><span>Total Deductions</span><span style="color:#dc2626">−${Utils.formatCurrency(totalDeductions)}</span></div>
+    <div class="line"><strong>Net Salaries Paid</strong><strong>${Utils.formatCurrency(totalNetPay)}</strong></div>
+    <div class="line"><span>Approved Expenses</span><span>${Utils.formatCurrency(totalApprovedExpenses)}</span></div>
+    ${totalUnforeseen > 0 ? `<div class="line unforeseen"><span>　↳ Unforeseen (Other)</span><span>${Utils.formatCurrency(totalUnforeseen)}</span></div>` : ''}
+    ${totalPendingExpenses > 0 ? `<div class="line" style="color:#d97706"><span>Pending Expenses (not yet approved)</span><span>${Utils.formatCurrency(totalPendingExpenses)}</span></div>` : ''}
+    <div class="line total"><span>GRAND TOTAL</span><span>${Utils.formatCurrency(totalExpenditure)}</span></div>
+  </div>`;
+
+      if (payrollPending.length > 0) {
+        html += `<div style="background:#fef2f2;padding:10px 14px;border-radius:6px;color:#dc2626;font-size:11px;margin-top:12px">
+          ⚠ <strong>${payrollPending.length} payroll record(s)</strong> for ${payrollPending.map(p => p.employeeName).join(', ')} ${payrollPending.length === 1 ? 'is' : 'are'} still <strong>pending</strong>. They are included in the totals above but have not yet been marked as paid.
+        </div>`;
+      }
+
+      // ── Footer ──────────────────────────────────────────────
+      html += `
+  <div class="footer">
+    <strong>${Utils.escapeHtml(company.name)}</strong> &mdash; Confidential Financial Report &mdash; ${periodLabel}
+    ${company.address ? `<br/>${Utils.escapeHtml(company.address)}` : ''}
+  </div>
+</body>
+</html>`;
+
+      // ── Set CSV Data ────────────────────────────────────────
+      this.currentHeaders = ['Category', 'Detail', 'Amount (UGX)'];
+      this.currentRows = [
+        ['PAYROLL', '', ''],
+        ['Employees on Payroll', '', String(payrollCount)],
+        ['Total Basic Salaries', '', Utils.formatCurrency(totalBasic)],
+        ['Total Allowances', '', Utils.formatCurrency(totalAllowances)],
+        ['Total Deductions', '', Utils.formatCurrency(totalDeductions)],
+        ['Net Salaries Paid', '', Utils.formatCurrency(totalNetPay)],
+        ['', '', ''],
+        ['EXPENSES', '', ''],
+        ['Total Approved Expenses', '', Utils.formatCurrency(totalApprovedExpenses)],
+        ['Unforeseen (Other)', '', Utils.formatCurrency(totalUnforeseen)],
+        ['Pending Expenses', '', Utils.formatCurrency(totalPendingExpenses)],
+        ['', '', ''],
+        ['GRAND TOTAL', '', Utils.formatCurrency(totalExpenditure)],
+      ];
+      if (totalUnforeseen > 0) {
+        this.currentRows.push(['', '', '']);
+        this.currentRows.push(['UNFORESEEN BREAKDOWN', '', '']);
+        unforeseenExpenses.forEach(ex => {
+          this.currentRows.push([`  ${ex.officerName}`, ex.description || '', Utils.formatCurrency(ex.amount)]);
+        });
+      }
+
+      // Show the report
+      this.showReport(html, `Financial Summary - ${periodLabel}`);
+
+    } catch (err) {
+      console.error('Financial report error:', err);
+      Utils.toast('Error generating financial report: ' + err.message, 'error');
     }
   },
 
