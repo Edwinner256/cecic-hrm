@@ -1,0 +1,503 @@
+// ─── Settings Module ─────────────────────────────────────────────
+
+const Settings = {
+  async render() {
+    const container = document.getElementById('page-settings');
+    const settings = await DB.getAllSettings();
+
+    container.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+          <div class="stat-info">
+            <h3>${Utils.escapeHtml(settings.companyName || 'Not Set')}</h3>
+            <p>Company Name</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="bi bi-envelope"></i></div>
+          <div class="stat-info">
+            <h3>${settings.smtpHost ? 'Configured' : 'Not Configured'}</h3>
+            <p>SMTP / Email</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon cyan"><i class="bi bi-database"></i></div>
+          <div class="stat-info">
+            <h3 id="recordCount">...</h3>
+            <p>Total Records</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow"><i class="bi bi-hdd-stack"></i></div>
+          <div class="stat-info">
+            <h3 id="dbSize">...</h3>
+            <p>Database Size</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-24">
+        <div class="card-header"><h3>Company Information</h3></div>
+        <div class="card-body">
+          <form id="companyForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" class="form-control" name="companyName" value="${Utils.escapeHtml(settings.companyName || '')}" placeholder="Your Company Ltd" />
+              </div>
+              <div class="form-group">
+                <label>Company Email</label>
+                <input type="email" class="form-control" name="companyEmail" value="${Utils.escapeHtml(settings.companyEmail || '')}" placeholder="info@company.co.ug" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Company Phone</label>
+                <input type="text" class="form-control" name="companyPhone" value="${Utils.escapeHtml(settings.companyPhone || '')}" placeholder="+256 700 123 456" />
+              </div>
+              <div class="form-group">
+                <label>Company Address</label>
+                <textarea class="form-control" name="companyAddress" placeholder="P.O. Box 12345, Kampala, Uganda" rows="2">${Utils.escapeHtml(settings.companyAddress || '')}</textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Company Logo</label>
+                <input type="file" class="form-control" id="companyLogoInput" accept="image/*" />
+                <div class="hint">Upload your company logo (PNG, JPG). It will appear in reports, forms, and the sidebar.</div>
+              </div>
+              <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px">
+                <div id="logoPreview" style="display:${settings.companyLogo ? 'flex' : 'none'};align-items:center;gap:12px">
+                  <img src="${Utils.escapeHtml(settings.companyLogo || '')}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;border:2px solid var(--border);background:#fff" />
+                  <div>
+                    <div style="font-weight:600;font-size:13px">Current Logo</div>
+                    <button type="button" class="btn btn-sm btn-outline mt-8" onclick="Settings.removeLogo()">
+                      <i class="bi bi-trash"></i> Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Company Info</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card mb-24">
+        <div class="card-header"><h3>Email (SMTP) Configuration</h3></div>
+        <div class="card-body">
+          <p class="text-muted mb-16">Configure SMTP settings to enable sending emails when connected to the internet. Use Gmail, Outlook, or any SMTP provider.</p>
+          <form id="smtpForm">
+            <div class="form-row-3">
+              <div class="form-group">
+                <label>SMTP Host</label>
+                <input type="text" class="form-control" name="smtpHost" value="${Utils.escapeHtml(settings.smtpHost || '')}" placeholder="smtp.gmail.com" />
+              </div>
+              <div class="form-group">
+                <label>Port</label>
+                <input type="number" class="form-control" name="smtpPort" value="${settings.smtpPort || '587'}" placeholder="587" />
+              </div>
+              <div class="form-group">
+                <label>Secure (SSL/TLS)</label>
+                <select class="form-control" name="smtpSecure">
+                  <option value="false" ${settings.smtpSecure === 'false' ? 'selected' : ''}>No (STARTTLS)</option>
+                  <option value="true" ${settings.smtpSecure === 'true' ? 'selected' : ''}>Yes (SSL)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>SMTP Username</label>
+                <input type="text" class="form-control" name="smtpUser" value="${Utils.escapeHtml(settings.smtpUser || '')}" placeholder="your.email@gmail.com" />
+              </div>
+              <div class="form-group">
+                <label>SMTP Password</label>
+                <input type="password" class="form-control" name="smtpPass" value="${Utils.escapeHtml(settings.smtpPass || '')}" placeholder="App password or SMTP password" />
+                <div class="hint">For Gmail, use an App Password (not your regular password).</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>From Address</label>
+              <input type="email" class="form-control" name="smtpFrom" value="${Utils.escapeHtml(settings.smtpFrom || '')}" placeholder="hr@company.co.ug" />
+              <div class="hint">The "From" address that recipients will see.</div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save SMTP Settings</button>
+              <button type="button" class="btn btn-outline" onclick="Settings.testEmail()"><i class="bi bi-send"></i> Test Email</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card mb-24" id="departmentSection">
+        <div class="card-header">
+          <h3>Department Management</h3>
+          <button class="btn btn-sm btn-primary" onclick="Settings.showAddDepartmentModal()">
+            <i class="bi bi-plus-lg"></i> Add Department
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="deptListContainer">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-24">
+        <div class="card-header"><h3>Data Management</h3></div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:12px">
+            <button class="btn btn-outline" onclick="Settings.exportData()">
+              <i class="bi bi-download"></i> Export All Data (JSON)
+            </button>
+            <button class="btn btn-outline" onclick="Settings.importData()">
+              <i class="bi bi-upload"></i> Import Data (JSON)
+            </button>
+            <button class="btn btn-danger" onclick="Settings.resetData()">
+              <i class="bi bi-exclamation-triangle"></i> Reset All Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>About</h3></div>
+        <div class="card-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Application</span>
+              <span class="value">Offline HR Management System</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Version</span>
+              <span class="value">1.0.0</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Storage</span>
+              <span class="value">IndexedDB (Local - Offline First)</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Email</span>
+              <span class="value">Nodemailer via SMTP (Online Only)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Bind forms
+    document.getElementById('companyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Utils.getFormData(e.target);
+
+      // Handle logo upload
+      const logoInput = document.getElementById('companyLogoInput');
+      if (logoInput && logoInput.files && logoInput.files[0]) {
+        data.companyLogo = await Utils.fileToBase64(logoInput.files[0]);
+      } else {
+        // Keep existing logo if already saved
+        data.companyLogo = settings.companyLogo || '';
+      }
+
+      for (const [key, value] of Object.entries(data)) {
+        await DB.setSetting(key, value);
+      }
+      Utils.toast('Company information saved', 'success');
+      this.render();
+      App.updateCompanyBranding();
+    });
+
+    document.getElementById('smtpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Utils.getFormData(e.target);
+      for (const [key, value] of Object.entries(data)) {
+        await DB.setSetting(key, value);
+      }
+      Utils.toast('SMTP settings saved', 'success');
+      this.render();
+    });
+
+    // Load data
+    this.loadStats();
+    this.renderDepartmentList();
+  },
+
+  async loadStats() {
+    try {
+      const count = (await DB.getAllEmployees()).length +
+        (await DB.getLeaveRecords()).length +
+        (await DB.getPayrollRecords()).length +
+        (await DB.getExpenses()).length;
+
+      document.getElementById('recordCount').textContent = count;
+
+      // Estimate database size
+      const estimate = count * 2; // rough KB estimate
+      document.getElementById('dbSize').textContent = estimate < 1000 ? `${estimate} KB` : `${(estimate / 1024).toFixed(1)} MB`;
+    } catch (e) {
+      // ok
+    }
+  },
+
+  async renderDepartmentList() {
+    const container = document.getElementById('deptListContainer');
+    if (!container) return;
+
+    try {
+      const depts = await DB.getDepartments();
+      const employees = await DB.getAllEmployees();
+
+      if (depts.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No departments configured.</p></div>';
+        return;
+      }
+
+      // Count employees per department
+      const empCounts = {};
+      employees.forEach(e => {
+        empCounts[e.department] = (empCounts[e.department] || 0) + 1;
+      });
+
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+          ${depts.map(d => {
+            const count = empCounts[d.name] || 0;
+            return `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)">
+                <div>
+                  <strong>${Utils.escapeHtml(d.name)}</strong>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${count} employee${count !== 1 ? 's' : ''}</div>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="Settings.deleteDepartment(${d.id})" title="Delete" ${count > 0 ? 'disabled style="opacity:0.4"' : ''}>
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } catch (err) {
+      console.error('Error rendering departments:', err);
+      container.innerHTML = '<div class="empty-state"><p>Error loading departments.</p></div>';
+    }
+  },
+
+  showAddDepartmentModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h2>Add Department</h2>
+          <button class="modal-close" data-close>&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Department Name <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="newDeptName" placeholder="e.g. Research & Development" autofocus />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" data-cancel>Cancel</button>
+          <button class="btn btn-primary" id="saveDeptBtn"><i class="bi bi-plus-lg"></i> Add Department</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('modalContainer').appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.querySelector('[data-close]').addEventListener('click', close);
+    overlay.querySelector('[data-cancel]').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#saveDeptBtn').addEventListener('click', async () => {
+      const nameInput = overlay.querySelector('#newDeptName');
+      const name = nameInput.value.trim();
+      if (!name) {
+        Utils.toast('Please enter a department name', 'warning');
+        nameInput.focus();
+        return;
+      }
+
+      try {
+        await DB.addDepartment(name);
+        Utils.toast(`Department "${name}" added`, 'success');
+        close();
+        this.render();
+      } catch (err) {
+        Utils.toast(err.message, 'error');
+      }
+    });
+
+    // Enter key support
+    overlay.querySelector('#newDeptName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') overlay.querySelector('#saveDeptBtn').click();
+    });
+  },
+
+  async deleteDepartment(id) {
+    try {
+      await DB.deleteDepartment(id);
+      Utils.toast('Department deleted', 'success');
+      this.render();
+    } catch (err) {
+      Utils.toast(err.message, 'error');
+    }
+  },
+
+  async removeLogo() {
+    await DB.setSetting('companyLogo', '');
+    Utils.toast('Company logo removed', 'success');
+    this.render();
+    App.updateCompanyBranding();
+  },
+
+  async testEmail() {
+    const settings = await DB.getAllSettings();
+    if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass) {
+      Utils.toast('Please configure SMTP settings first', 'warning');
+      return;
+    }
+
+    if (!settings.companyEmail) {
+      Utils.toast('Please set a company email to send the test to', 'warning');
+      return;
+    }
+
+    const online = await Utils.isOnline();
+    if (!online) {
+      Utils.toast('No internet connection', 'warning');
+      return;
+    }
+
+    Utils.toast('Sending test email...', 'info');
+
+    try {
+      const payload = {
+        to: settings.companyEmail,
+        subject: 'Test Email from Offline HRMS',
+        html: '<h2>Test Email</h2><p>If you received this, your SMTP configuration is working correctly!</p><p>Sent from Offline HR Management System</p>',
+        smtpConfig: {
+          host: settings.smtpHost,
+          port: parseInt(settings.smtpPort || '587'),
+          secure: settings.smtpSecure === 'true',
+          user: settings.smtpUser,
+          pass: settings.smtpPass,
+          from: settings.smtpFrom || settings.smtpUser
+        }
+      };
+
+      const result = Utils.isElectron()
+        ? await window.electronAPI.sendEmail(payload)
+        : await Utils.apiPost('/api/send-email', payload);
+
+      if (result.success) {
+        Utils.toast('Test email sent! Check your inbox.', 'success');
+      } else {
+        Utils.toast('Failed: ' + (result.error || 'Unknown'), 'error');
+      }
+    } catch (err) {
+      Utils.toast('Error: ' + err.message, 'error');
+    }
+  },
+
+  async exportData() {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      employees: await DB.getAllEmployees(),
+      leave: await DB.getLeaveRecords(),
+      payroll: await DB.getPayrollRecords(),
+      expenses: await DB.getExpenses(),
+      settings: await DB.getAllSettings()
+    };
+
+    const json = JSON.stringify(data, null, 2);
+
+    if (window.electronAPI) {
+      const result = await window.electronAPI.saveFile(
+        `hrms-backup-${new Date().toISOString().split('T')[0]}.json`,
+        json,
+        [{ name: 'JSON Files', extensions: ['json'] }]
+      );
+      if (result.success) Utils.toast('Data exported successfully', 'success');
+    } else {
+      Utils.browserDownload(
+        `hrms-backup-${new Date().toISOString().split('T')[0]}.json`,
+        json,
+        'application/json'
+      );
+      Utils.toast('Data exported', 'success');
+    }
+  },
+
+  importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!data.employees || !Array.isArray(data.employees)) {
+          Utils.toast('Invalid backup file format', 'error');
+          return;
+        }
+
+        const confirmed = await Utils.confirm(
+          `This will import ${data.employees.length} employees, ${(data.leave || []).length} leave records, ${(data.payroll || []).length} payroll records, and ${(data.expenses || []).length} expenses. Existing data will be replaced. Continue?`,
+          'Import Data'
+        );
+
+        if (!confirmed) return;
+
+        // Clear and re-import
+        await db.delete();
+        await db.open();
+
+        if (data.employees.length) await db.employees.bulkAdd(data.employees);
+        if (data.leave?.length) await db.leave.bulkAdd(data.leave);
+        if (data.payroll?.length) await db.payroll.bulkAdd(data.payroll);
+        if (data.expenses?.length) await db.expenses.bulkAdd(data.expenses);
+        if (data.settings) {
+          for (const [key, value] of Object.entries(data.settings)) {
+            await DB.setSetting(key, value);
+          }
+        }
+
+        Utils.toast('Data imported successfully! Reloading...', 'success');
+        setTimeout(() => location.reload(), 1500);
+      } catch (err) {
+        Utils.toast('Import failed: ' + err.message, 'error');
+      }
+    };
+    input.click();
+  },
+
+  async resetData() {
+    const confirmed = await Utils.confirm(
+      '⚠️ This will permanently delete ALL data (employees, leave, payroll, expenses, and settings). This cannot be undone. Are you absolutely sure?',
+      'Reset All Data'
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = await Utils.confirm(
+      'Type "RESET" to confirm: This action is irreversible.',
+      'Final Confirmation'
+    );
+
+    if (!doubleConfirm) return;
+
+    await db.delete();
+    Utils.toast('All data has been reset. Reloading...', 'success');
+    setTimeout(() => location.reload(), 1500);
+  }
+};
