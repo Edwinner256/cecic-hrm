@@ -378,12 +378,19 @@ async function seedDemoData() {
 }
 
 /**
- * First-time seed: only runs if DB is empty.
- * If data already exists, does nothing.
+ * Auto-seed on first visit (or when employees table is empty).
+ * If employees already exist, does nothing (preserves user data).
  */
 async function seedDefaultData() {
-  const deptCount = await db.departments.count();
-  if (deptCount > 0) return; // Already has data
+  const empCount = await db.employees.count();
+  if (empCount > 0) return; // Already has employee data — don't overwrite
+
+  // Departments might exist from a partial session; clear & start fresh
+  await db.departments.clear();
+  await db.leave.clear();
+  await db.payroll.clear();
+  await db.expenses.clear();
+  await db.settings.clear();
 
   await seedDemoData();
 }
