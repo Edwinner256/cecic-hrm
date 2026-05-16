@@ -145,10 +145,10 @@ const Leave = {
         <td>
           <div style="display:flex;gap:4px">
             ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success" onclick="Leave.approve('${r.id}')" title="Approve"><i class="bi bi-check-lg"></i></button>
-              <button class="btn btn-sm btn-danger" onclick="Leave.reject('${r.id}')" title="Reject"><i class="bi bi-x-lg"></i></button>
+              <button class="btn btn-sm btn-success" onclick="Leave.approve(${r.id})" title="Approve"><i class="bi bi-check-lg"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="Leave.reject(${r.id})" title="Reject"><i class="bi bi-x-lg"></i></button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="Leave.confirmDelete('${r.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="Leave.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash"></i></button>
           </div>
         </td>
       </tr>`;

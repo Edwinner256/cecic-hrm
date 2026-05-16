@@ -157,9 +157,9 @@ const Payroll = {
         <td>
           <div style="display:flex;gap:4px">
             ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success" onclick="Payroll.markPaid('${r.id}')" title="Mark as Paid"><i class="bi bi-check-lg"></i></button>
+              <button class="btn btn-sm btn-success" onclick="Payroll.markPaid(${r.id})" title="Mark as Paid"><i class="bi bi-check-lg"></i></button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="Payroll.confirmDelete('${r.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="Payroll.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash"></i></button>
           </div>
         </td>
       </tr>`;

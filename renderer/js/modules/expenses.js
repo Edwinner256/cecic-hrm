@@ -118,12 +118,12 @@ const Expenses = {
         <td><span class="badge ${badgeClass}">${r.status}</span></td>
         <td>
           <div style="display:flex;gap:4px">
-            <button class="btn btn-sm btn-outline" onclick="Expenses.showViewModal('${r.id}')" title="View"><i class="bi bi-eye"></i></button>
+            <button class="btn btn-sm btn-outline" onclick="Expenses.showViewModal(${r.id})" title="View"><i class="bi bi-eye"></i></button>
             ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success" onclick="Expenses.approve('${r.id}')" title="Approve"><i class="bi bi-check-lg"></i></button>
-              <button class="btn btn-sm btn-danger" onclick="Expenses.reject('${r.id}')" title="Reject"><i class="bi bi-x-lg"></i></button>
+              <button class="btn btn-sm btn-success" onclick="Expenses.approve(${r.id})" title="Approve"><i class="bi bi-check-lg"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="Expenses.reject(${r.id})" title="Reject"><i class="bi bi-x-lg"></i></button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="Expenses.confirmDelete('${r.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="Expenses.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash"></i></button>
           </div>
         </td>
       </tr>`;

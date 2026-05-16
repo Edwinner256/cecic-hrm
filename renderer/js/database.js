@@ -437,7 +437,9 @@ const DB = {
   },
 
   async getEmployee(id) {
-    return await db.employees.get(id);
+    // Dexie auto-increment keys are numbers — coerce if needed
+    const key = typeof id === 'string' ? parseInt(id, 10) : id;
+    return await db.employees.get(key);
   },
 
   async getEmployeeByEmpId(empId) {
@@ -454,12 +456,12 @@ const DB = {
   },
 
   async updateEmployee(id, data) {
-    return await db.employees.update(id, data);
+    return await db.employees.update(typeof id === 'string' ? parseInt(id, 10) : id, data);
   },
 
   async deleteEmployee(id) {
     // Soft delete - set status to inactive
-    return await db.employees.update(id, { status: 'inactive' });
+    return await db.employees.update(typeof id === 'string' ? parseInt(id, 10) : id, { status: 'inactive' });
   },
 
   async getEmployeeCount() {
@@ -481,11 +483,11 @@ const DB = {
   },
 
   async updateLeave(id, data) {
-    return await db.leave.update(id, data);
+    return await db.leave.update(typeof id === 'string' ? parseInt(id, 10) : id, data);
   },
 
   async deleteLeave(id) {
-    return await db.leave.delete(id);
+    return await db.leave.delete(typeof id === 'string' ? parseInt(id, 10) : id);
   },
 
   async getPendingLeaveCount() {
@@ -507,11 +509,11 @@ const DB = {
   },
 
   async updatePayroll(id, data) {
-    return await db.payroll.update(id, data);
+    return await db.payroll.update(typeof id === 'string' ? parseInt(id, 10) : id, data);
   },
 
   async deletePayroll(id) {
-    return await db.payroll.delete(id);
+    return await db.payroll.delete(typeof id === 'string' ? parseInt(id, 10) : id);
   },
 
   async getMonthlyPayrollTotal(month, year) {
@@ -529,11 +531,11 @@ const DB = {
   },
 
   async updateExpense(id, data) {
-    return await db.expenses.update(id, data);
+    return await db.expenses.update(typeof id === 'string' ? parseInt(id, 10) : id, data);
   },
 
   async deleteExpense(id) {
-    return await db.expenses.delete(id);
+    return await db.expenses.delete(typeof id === 'string' ? parseInt(id, 10) : id);
   },
 
   async getPendingExpensesTotal() {

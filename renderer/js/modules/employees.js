@@ -4,7 +4,15 @@ const Employees = {
   async render() {
     const container = document.getElementById('page-employees');
     const employees = await DB.getEmployees();
+    const allEmployees = await DB.getAllEmployees();
     const deptNames = await DB.getDepartmentNames();
+    console.log('👥 Employee render — active:', employees.length, 'total:', allEmployees.length, 'departments:', deptNames);
+    if (allEmployees.length > 0 && employees.length === 0) {
+      console.warn('⚠️ Employees exist but none are active! Statuses:', allEmployees.map(e => ({ id: e.employeeId, status: e.status })));
+    }
+    if (allEmployees.length === 0) {
+      console.warn('⚠️ No employees in DB at all. Seed may not have run.');
+    }
 
     const deptOptions = deptNames.map(d =>
       `<option value="${Utils.escapeHtml(d)}">${Utils.escapeHtml(d)}</option>`
@@ -96,13 +104,13 @@ const Employees = {
         <td>${Utils.formatCurrency(emp.salary)}</td>
         <td>
           <div style="display:flex;gap:4px">
-            <button class="btn btn-sm btn-outline" onclick="Employees.showViewModal('${emp.id}')" title="View">
+            <button class="btn btn-sm btn-outline" onclick="Employees.showViewModal(${emp.id})" title="View">
               <i class="bi bi-eye"></i>
             </button>
-            <button class="btn btn-sm btn-outline" onclick="Employees.showEditModal('${emp.id}')" title="Edit">
+            <button class="btn btn-sm btn-outline" onclick="Employees.showEditModal(${emp.id})" title="Edit">
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm btn-danger" onclick="Employees.confirmDelete('${emp.id}')" title="Delete">
+            <button class="btn btn-sm btn-danger" onclick="Employees.confirmDelete(${emp.id})" title="Delete">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -114,6 +122,7 @@ const Employees = {
   async filter() {
     const search = (document.getElementById('empSearch').value || '').toLowerCase();
     const dept = document.getElementById('empDeptFilter').value;
+    console.log('🔍 Employee filter — search:', search, 'dept:', dept);
     let employees = await DB.getEmployees();
 
     if (search) {
@@ -177,6 +186,7 @@ const Employees = {
   },
 
   async showEditModal(id) {
+    console.log('✏️ Edit employee ID:', id, '(type:', typeof id, ')');
     const emp = await DB.getEmployee(id);
     if (!emp) { Utils.toast('Employee not found', 'error'); return; }
 
@@ -220,6 +230,7 @@ const Employees = {
   },
 
   async showViewModal(id) {
+    console.log('👁️ View employee ID:', id, '(type:', typeof id, ')');
     const emp = await DB.getEmployee(id);
     if (!emp) { Utils.toast('Employee not found', 'error'); return; }
 

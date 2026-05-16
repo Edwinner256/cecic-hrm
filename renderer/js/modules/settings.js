@@ -517,11 +517,17 @@ const Settings = {
 
     Utils.toast('Loading demo data...', 'info');
     try {
+      console.log('📦 Loading demo data...');
       await DB.loadDemoData();
-      Utils.toast('Demo data loaded! Reloading...', 'success');
+      console.log('✅ Demo data seeded successfully');
+      // Verify
+      const empCount = await db.employees.count();
+      const deptCount = await db.departments.count();
+      console.log('📊 After seed — employees:', empCount, 'departments:', deptCount);
+      Utils.toast(`Demo data loaded! (${empCount} employees, ${deptCount} departments). Reloading...`, 'success');
       setTimeout(() => location.reload(), 1500);
     } catch (err) {
-      console.error('Demo data load error:', err);
+      console.error('❌ Demo data load error:', err);
       Utils.toast('Error loading demo data: ' + err.message, 'error');
     }
   }
