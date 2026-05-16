@@ -13,244 +13,379 @@ db.version(2).stores({
 
 // ─── Default Data Seeds ─────────────────────────────────────────
 
+/**
+ * Rich demo data to showcase all features of the HRMS.
+ * Populates departments, employees, leave, payroll, expenses, and settings
+ * with realistic Uganda-based company data.
+ */
+async function seedDemoData() {
+  // ── Departments ────────────────────────────────────────────
+  await db.departments.bulkAdd([
+    { name: 'Engineering' },
+    { name: 'Finance' },
+    { name: 'Human Resources' },
+    { name: 'Marketing' },
+    { name: 'Operations' },
+    { name: 'Sales' },
+    { name: 'Administration' },
+    { name: 'Legal' }
+  ]);
+
+  // ── Employees (12) ─────────────────────────────────────────
+  await db.employees.bulkAdd([
+    {
+      employeeId: 'EMP-001', firstName: 'John', lastName: 'Ssebunya',
+      email: 'john.ssebunya@company.co.ug', phone: '+256 712 345 678',
+      department: 'Engineering', position: 'Senior Developer',
+      salary: 10000000, employmentDate: Utils.toDateInputValue(new Date(2020, 0, 15)),
+      status: 'active', photo: '',
+      address: '123 Kampala Rd', emergencyContact: '+256 722 111 222',
+      bankAccount: '1001234567890', bankName: 'Stanbic Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-002', firstName: 'Mary', lastName: 'Nakato',
+      email: 'mary.nakato@company.co.ug', phone: '+256 723 456 789',
+      department: 'Finance', position: 'Finance Officer',
+      salary: 6500000, employmentDate: Utils.toDateInputValue(new Date(2021, 5, 1)),
+      status: 'active', photo: '',
+      address: '456 Jinja Rd', emergencyContact: '+256 733 333 444',
+      bankAccount: '2000987654321', bankName: 'Centenary Bank'
+    },
+    {
+      employeeId: 'EMP-003', firstName: 'Peter', lastName: 'Okello',
+      email: 'peter.okello@company.co.ug', phone: '+256 711 567 890',
+      department: 'Human Resources', position: 'HR Officer',
+      salary: 5000000, employmentDate: Utils.toDateInputValue(new Date(2023, 2, 10)),
+      status: 'active', photo: '',
+      address: '789 Gulu Rd', emergencyContact: '+256 744 555 666',
+      bankAccount: '3005556667777', bankName: 'DFCU Bank'
+    },
+    {
+      employeeId: 'EMP-004', firstName: 'Grace', lastName: 'Achieng',
+      email: 'grace.achieng@company.co.ug', phone: '+256 713 678 901',
+      department: 'Marketing', position: 'Marketing Lead',
+      salary: 7500000, employmentDate: Utils.toDateInputValue(new Date(2022, 8, 20)),
+      status: 'active', photo: '',
+      address: '321 Entebbe Rd', emergencyContact: '+256 755 777 888',
+      bankAccount: '4001112223334', bankName: 'Absa Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-005', firstName: 'David', lastName: 'Muwonge',
+      email: 'david.muwonge@company.co.ug', phone: '+256 714 789 012',
+      department: 'Engineering', position: 'Junior Developer',
+      salary: 3500000, employmentDate: Utils.toDateInputValue(new Date(2024, 0, 5)),
+      status: 'active', photo: '',
+      address: '654 Entebbe Rd', emergencyContact: '+256 766 888 999',
+      bankAccount: '5004445556667', bankName: 'Equity Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-006', firstName: 'Sarah', lastName: 'Nabatanzi',
+      email: 'sarah.nabatanzi@company.co.ug', phone: '+256 715 890 123',
+      department: 'Operations', position: 'Operations Manager',
+      salary: 8500000, employmentDate: Utils.toDateInputValue(new Date(2019, 0, 10)),
+      status: 'active', photo: '',
+      address: '111 Bombo Rd', emergencyContact: '+256 777 111 222',
+      bankAccount: '6007778889990', bankName: 'Stanbic Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-007', firstName: 'Robert', lastName: 'Mugisha',
+      email: 'robert.mugisha@company.co.ug', phone: '+256 716 901 234',
+      department: 'Sales', position: 'Sales Executive',
+      salary: 4500000, employmentDate: Utils.toDateInputValue(new Date(2023, 5, 15)),
+      status: 'active', photo: '',
+      address: '222 Mbarara Rd', emergencyContact: '+256 788 333 444',
+      bankAccount: '7009990001112', bankName: 'Equity Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-008', firstName: 'Jane', lastName: 'Akello',
+      email: 'jane.akello@company.co.ug', phone: '+256 717 012 345',
+      department: 'Administration', position: 'Admin Assistant',
+      salary: 3000000, employmentDate: Utils.toDateInputValue(new Date(2025, 0, 8)),
+      status: 'active', photo: '',
+      address: '333 Gaba Rd', emergencyContact: '+256 799 555 666',
+      bankAccount: '8001112223334', bankName: 'Centenary Bank'
+    },
+    {
+      employeeId: 'EMP-009', firstName: 'Michael', lastName: 'Wasswa',
+      email: 'michael.wasswa@company.co.ug', phone: '+256 718 123 456',
+      department: 'Legal', position: 'Legal Counsel',
+      salary: 9000000, employmentDate: Utils.toDateInputValue(new Date(2021, 2, 1)),
+      status: 'active', photo: '',
+      address: '555 Kololo Hill', emergencyContact: '+256 700 777 888',
+      bankAccount: '9003334445556', bankName: 'DFCU Bank'
+    },
+    {
+      employeeId: 'EMP-010', firstName: 'Esther', lastName: 'Nambi',
+      email: 'esther.nambi@company.co.ug', phone: '+256 719 234 567',
+      department: 'Engineering', position: 'QA Engineer',
+      salary: 4000000, employmentDate: Utils.toDateInputValue(new Date(2024, 7, 15)),
+      status: 'active', photo: '',
+      address: '777 Ntinda Rd', emergencyContact: '+256 711 888 999',
+      bankAccount: '1005556667778', bankName: 'Absa Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-011', firstName: 'Paul', lastName: 'Kato',
+      email: 'paul.kato@company.co.ug', phone: '+256 720 345 678',
+      department: 'Marketing', position: 'Graphic Designer',
+      salary: 3800000, employmentDate: Utils.toDateInputValue(new Date(2024, 9, 1)),
+      status: 'active', photo: '',
+      address: '888 Luzira', emergencyContact: '+256 722 999 000',
+      bankAccount: '2006667778889', bankName: 'Stanbic Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-012', firstName: 'Diana', lastName: 'Nansubuga',
+      email: 'diana.nansubuga@company.co.ug', phone: '+256 721 456 789',
+      department: 'Finance', position: 'Accountant',
+      salary: 4200000, employmentDate: Utils.toDateInputValue(new Date(2023, 1, 20)),
+      status: 'active', photo: '',
+      address: '999 Mengo', emergencyContact: '+256 733 111 222',
+      bankAccount: '3007778889990', bankName: 'Centenary Bank'
+    }
+  ]);
+
+  // ── Leave Records (12) ─────────────────────────────────────
+  await db.leave.bulkAdd([
+    {
+      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
+      leaveType: 'annual', days: 5,
+      startDate: '2026-03-10', endDate: '2026-03-14',
+      reason: 'Family visit to Jinja',
+      status: 'approved', appliedDate: '2026-02-15', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-002', employeeName: 'Mary Nakato',
+      leaveType: 'sick', days: 2,
+      startDate: '2026-04-01', endDate: '2026-04-02',
+      reason: 'Medical appointment',
+      status: 'approved', appliedDate: '2026-03-28', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-003', employeeName: 'Peter Okello',
+      leaveType: 'annual', days: 3,
+      startDate: '2026-05-05', endDate: '2026-05-07',
+      reason: 'Personal visit to home village',
+      status: 'pending', appliedDate: '2026-05-01', approvedBy: ''
+    },
+    {
+      employeeId: 'EMP-004', employeeName: 'Grace Achieng',
+      leaveType: 'annual', days: 10,
+      startDate: '2026-06-01', endDate: '2026-06-10',
+      reason: 'Annual leave - family trip to Mombasa',
+      status: 'approved', appliedDate: '2026-04-20', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-005', employeeName: 'David Muwonge',
+      leaveType: 'sick', days: 1,
+      startDate: '2026-04-20', endDate: '2026-04-20',
+      reason: 'Malaria treatment',
+      status: 'approved', appliedDate: '2026-04-20', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-006', employeeName: 'Sarah Nabatanzi',
+      leaveType: 'annual', days: 15,
+      startDate: '2026-07-01', endDate: '2026-07-15',
+      reason: 'Annual leave - travel to UK',
+      status: 'approved', appliedDate: '2026-05-10', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-006', employeeName: 'Sarah Nabatanzi',
+      leaveType: 'compassionate', days: 3,
+      startDate: '2026-03-20', endDate: '2026-03-22',
+      reason: 'Family bereavement',
+      status: 'approved', appliedDate: '2026-03-19', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-009', employeeName: 'Michael Wasswa',
+      leaveType: 'study', days: 5,
+      startDate: '2026-05-15', endDate: '2026-05-19',
+      reason: 'Legal seminar at Law Development Centre',
+      status: 'pending', appliedDate: '2026-04-20', approvedBy: ''
+    },
+    {
+      employeeId: 'EMP-010', employeeName: 'Esther Nambi',
+      leaveType: 'personal', days: 2,
+      startDate: '2026-05-22', endDate: '2026-05-23',
+      reason: 'Personal matters',
+      status: 'pending', appliedDate: '2026-05-14', approvedBy: ''
+    },
+    {
+      employeeId: 'EMP-007', employeeName: 'Robert Mugisha',
+      leaveType: 'annual', days: 7,
+      startDate: '2026-08-01', endDate: '2026-08-07',
+      reason: 'Annual leave - visiting family in Gulu',
+      status: 'approved', appliedDate: '2026-06-01', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-011', employeeName: 'Paul Kato',
+      leaveType: 'sick', days: 1,
+      startDate: '2026-05-02', endDate: '2026-05-02',
+      reason: 'Feeling unwell',
+      status: 'rejected', appliedDate: '2026-05-01', approvedBy: 'HR Admin'
+    },
+    {
+      employeeId: 'EMP-012', employeeName: 'Diana Nansubuga',
+      leaveType: 'annual', days: 4,
+      startDate: '2026-05-25', endDate: '2026-05-28',
+      reason: 'Short break',
+      status: 'pending', appliedDate: '2026-05-10', approvedBy: ''
+    }
+  ]);
+
+  // ── Payroll Records (10) ───────────────────────────────────
+  await db.payroll.bulkAdd([
+    // March 2026
+    {
+      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
+      month: 3, year: 2026, basicSalary: 10000000,
+      allowances: 1500000, deductions: 2000000, netPay: 9500000,
+      status: 'paid', paidDate: '2026-03-28'
+    },
+    {
+      employeeId: 'EMP-002', employeeName: 'Mary Nakato',
+      month: 3, year: 2026, basicSalary: 6500000,
+      allowances: 800000, deductions: 1200000, netPay: 6100000,
+      status: 'paid', paidDate: '2026-03-28'
+    },
+    {
+      employeeId: 'EMP-006', employeeName: 'Sarah Nabatanzi',
+      month: 3, year: 2026, basicSalary: 8500000,
+      allowances: 1000000, deductions: 1700000, netPay: 7800000,
+      status: 'paid', paidDate: '2026-03-28'
+    },
+    // April 2026
+    {
+      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
+      month: 4, year: 2026, basicSalary: 10000000,
+      allowances: 1500000, deductions: 2000000, netPay: 9500000,
+      status: 'paid', paidDate: '2026-04-28'
+    },
+    {
+      employeeId: 'EMP-002', employeeName: 'Mary Nakato',
+      month: 4, year: 2026, basicSalary: 6500000,
+      allowances: 800000, deductions: 1200000, netPay: 6100000,
+      status: 'paid', paidDate: '2026-04-28'
+    },
+    {
+      employeeId: 'EMP-003', employeeName: 'Peter Okello',
+      month: 4, year: 2026, basicSalary: 5000000,
+      allowances: 500000, deductions: 900000, netPay: 4600000,
+      status: 'pending', paidDate: ''
+    },
+    {
+      employeeId: 'EMP-004', employeeName: 'Grace Achieng',
+      month: 4, year: 2026, basicSalary: 7500000,
+      allowances: 1000000, deductions: 1400000, netPay: 7100000,
+      status: 'paid', paidDate: '2026-04-28'
+    },
+    {
+      employeeId: 'EMP-009', employeeName: 'Michael Wasswa',
+      month: 4, year: 2026, basicSalary: 9000000,
+      allowances: 1200000, deductions: 1800000, netPay: 8400000,
+      status: 'paid', paidDate: '2026-04-28'
+    },
+    // May 2026 (current month — some still pending)
+    {
+      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
+      month: 5, year: 2026, basicSalary: 10000000,
+      allowances: 1500000, deductions: 2000000, netPay: 9500000,
+      status: 'paid', paidDate: '2026-05-15'
+    },
+    {
+      employeeId: 'EMP-002', employeeName: 'Mary Nakato',
+      month: 5, year: 2026, basicSalary: 6500000,
+      allowances: 800000, deductions: 1200000, netPay: 6100000,
+      status: 'pending', paidDate: ''
+    }
+  ]);
+
+  // ── Expenses (10) ──────────────────────────────────────────
+  await db.expenses.bulkAdd([
+    {
+      officerName: 'John Ssebunya', department: 'Engineering',
+      category: 'Travel', amount: 850000,
+      description: 'Client site visit — Jinja',
+      date: '2026-04-10', receipt: '', status: 'approved', approvedBy: 'Finance'
+    },
+    {
+      officerName: 'Grace Achieng', department: 'Marketing',
+      category: 'Supplies', amount: 450000,
+      description: 'Marketing materials for trade fair',
+      date: '2026-04-15', receipt: '', status: 'approved', approvedBy: 'Finance'
+    },
+    {
+      officerName: 'Peter Okello', department: 'Human Resources',
+      category: 'Other', amount: 350000,
+      description: 'Staff welfare — team lunch',
+      date: '2026-05-02', receipt: '', status: 'pending', approvedBy: ''
+    },
+    {
+      officerName: 'Sarah Nabatanzi', department: 'Operations',
+      category: 'Travel', amount: 1200000,
+      description: 'Field inspection — Gulu office',
+      date: '2026-04-20', receipt: '', status: 'approved', approvedBy: 'Finance'
+    },
+    {
+      officerName: 'Mary Nakato', department: 'Finance',
+      category: 'Supplies', amount: 250000,
+      description: 'Office stationery',
+      date: '2026-05-05', receipt: '', status: 'approved', approvedBy: 'Finance'
+    },
+    {
+      officerName: 'Robert Mugisha', department: 'Sales',
+      category: 'Travel', amount: 600000,
+      description: 'Client meetings in Mbarara',
+      date: '2026-05-08', receipt: '', status: 'pending', approvedBy: ''
+    },
+    {
+      officerName: 'Michael Wasswa', department: 'Legal',
+      category: 'Other', amount: 750000,
+      description: 'Legal filing fees — court case',
+      date: '2026-04-25', receipt: '', status: 'approved', approvedBy: 'Finance'
+    },
+    {
+      officerName: 'Jane Akello', department: 'Administration',
+      category: 'Utilities', amount: 180000,
+      description: 'Office water cooler maintenance',
+      date: '2026-05-10', receipt: '', status: 'pending', approvedBy: ''
+    },
+    {
+      officerName: 'Paul Kato', department: 'Marketing',
+      category: 'Equipment', amount: 2500000,
+      description: 'New design workstation — iMac',
+      date: '2026-04-05', receipt: '', status: 'rejected', approvedBy: 'Finance'
+    },
+    {
+      officerName: 'Diana Nansubuga', department: 'Finance',
+      category: 'Other', amount: 95000,
+      description: 'Bank charges reconciliation fee',
+      date: '2026-05-12', receipt: '', status: 'pending', approvedBy: ''
+    }
+  ]);
+
+  // ── Settings ───────────────────────────────────────────────
+  await db.settings.bulkAdd([
+    { key: 'companyName', value: 'Offline HRMS (U) Ltd' },
+    { key: 'companyEmail', value: 'hr@company.co.ug' },
+    { key: 'companyPhone', value: '+256 700 123 456' },
+    { key: 'companyAddress', value: 'P.O. Box 12345, Kampala, Uganda' },
+    { key: 'smtpHost', value: '' },
+    { key: 'smtpPort', value: '587' },
+    { key: 'smtpSecure', value: 'false' },
+    { key: 'smtpUser', value: '' },
+    { key: 'smtpPass', value: '' },
+    { key: 'smtpFrom', value: '' }
+  ]);
+}
+
+/**
+ * First-time seed: only runs if DB is empty.
+ * If data already exists, does nothing.
+ */
 async function seedDefaultData() {
-  // Seed default departments
   const deptCount = await db.departments.count();
-  if (deptCount === 0) {
-    await db.departments.bulkAdd([
-      { name: 'Engineering' },
-      { name: 'Finance' },
-      { name: 'Human Resources' },
-      { name: 'Marketing' },
-      { name: 'Operations' },
-      { name: 'Sales' },
-      { name: 'Administration' },
-      { name: 'Legal' }
-    ]);
-  }
+  if (deptCount > 0) return; // Already has data
 
-  const empCount = await db.employees.count();
-  if (empCount === 0) {
-    const now = new Date();
-    await db.employees.bulkAdd([
-      {
-        employeeId: 'EMP-001',
-        firstName: 'John',
-        lastName: 'Ssebunya',
-        email: 'john.ssebunya@company.co.ug',
-        phone: '+256 712 345 678',
-        department: 'Engineering',
-        position: 'Senior Developer',
-        salary: 10000000,
-        employmentDate: Utils.toDateInputValue(new Date(2022, 0, 15)),
-        status: 'active',
-        photo: '',
-        address: '123 Kampala Rd',
-        emergencyContact: '+256 722 111 222',
-        bankAccount: '1001234567890',
-        bankName: 'Stanbic Bank Uganda'
-      },
-      {
-        employeeId: 'EMP-002',
-        firstName: 'Mary',
-        lastName: 'Nakato',
-        email: 'mary.nakato@company.co.ug',
-        phone: '+256 723 456 789',
-        department: 'Finance',
-        position: 'Finance Officer',
-        salary: 6500000,
-        employmentDate: Utils.toDateInputValue(new Date(2021, 5, 1)),
-        status: 'active',
-        photo: '',
-        address: '456 Jinja Rd',
-        emergencyContact: '+256 733 333 444',
-        bankAccount: '2000987654321',
-        bankName: 'Centenary Bank'
-      },
-      {
-        employeeId: 'EMP-003',
-        firstName: 'Peter',
-        lastName: 'Okello',
-        email: 'peter.okello@company.co.ug',
-        phone: '+256 711 567 890',
-        department: 'Human Resources',
-        position: 'HR Officer',
-        salary: 5000000,
-        employmentDate: Utils.toDateInputValue(new Date(2023, 2, 10)),
-        status: 'active',
-        photo: '',
-        address: '789 Gulu Rd',
-        emergencyContact: '+256 744 555 666',
-        bankAccount: '3005556667777',
-        bankName: 'DFCU Bank'
-      },
-      {
-        employeeId: 'EMP-004',
-        firstName: 'Grace',
-        lastName: 'Achieng',
-        email: 'grace.achieng@company.co.ug',
-        phone: '+256 713 678 901',
-        department: 'Marketing',
-        position: 'Marketing Lead',
-        salary: 7500000,
-        employmentDate: Utils.toDateInputValue(new Date(2022, 8, 20)),
-        status: 'active',
-        photo: '',
-        address: '321 Entebbe Rd',
-        emergencyContact: '+256 755 777 888',
-        bankAccount: '4001112223334',
-        bankName: 'Absa Bank Uganda'
-      },
-      {
-        employeeId: 'EMP-005',
-        firstName: 'David',
-        lastName: 'Muwonge',
-        email: 'david.muwonge@company.co.ug',
-        phone: '+256 714 789 012',
-        department: 'Engineering',
-        position: 'Junior Developer',
-        salary: 3500000,
-        employmentDate: Utils.toDateInputValue(new Date(2024, 0, 5)),
-        status: 'active',
-        photo: '',
-        address: '654 Entebbe Rd',
-        emergencyContact: '+256 766 888 999',
-        bankAccount: '5004445556667',
-        bankName: 'Equity Bank Uganda'
-      }
-    ]);
-
-    // Seed leave requests
-    await db.leave.bulkAdd([
-      {
-        employeeId: 'EMP-001',
-        employeeName: 'John Ssebunya',
-        leaveType: 'annual',
-        startDate: '2026-03-10',
-        endDate: '2026-03-14',
-        days: 5,
-        reason: 'Family visit to Jinja',
-        status: 'approved',
-        appliedDate: Utils.toDateInputValue(new Date(2026, 1, 15)),
-        approvedBy: 'HR Admin'
-      },
-      {
-        employeeId: 'EMP-002',
-        employeeName: 'Mary Nakato',
-        leaveType: 'sick',
-        startDate: '2026-04-01',
-        endDate: '2026-04-02',
-        days: 2,
-        reason: 'Medical appointment',
-        status: 'approved',
-        appliedDate: Utils.toDateInputValue(new Date(2026, 2, 28)),
-        approvedBy: 'HR Admin'
-      },
-      {
-        employeeId: 'EMP-003',
-        employeeName: 'Peter Okello',
-        leaveType: 'personal',
-        startDate: '2026-05-05',
-        endDate: '2026-05-05',
-        days: 1,
-        reason: 'Personal errand',
-        status: 'pending',
-        appliedDate: Utils.toDateInputValue(new Date(2026, 4, 1)),
-        approvedBy: ''
-      }
-    ]);
-
-    // Seed payroll records
-    await db.payroll.bulkAdd([
-      {
-        employeeId: 'EMP-001',
-        employeeName: 'John Ssebunya',
-        month: 4,
-        year: 2026,
-        basicSalary: 10000000,
-        allowances: 1500000,
-        deductions: 2000000,
-        netPay: 9500000,
-        status: 'paid',
-        paidDate: '2026-04-28'
-      },
-      {
-        employeeId: 'EMP-002',
-        employeeName: 'Mary Nakato',
-        month: 4,
-        year: 2026,
-        basicSalary: 6500000,
-        allowances: 800000,
-        deductions: 1200000,
-        netPay: 6100000,
-        status: 'paid',
-        paidDate: '2026-04-28'
-      },
-      {
-        employeeId: 'EMP-003',
-        employeeName: 'Peter Okello',
-        month: 4,
-        year: 2026,
-        basicSalary: 5000000,
-        allowances: 500000,
-        deductions: 900000,
-        netPay: 4600000,
-        status: 'pending',
-        paidDate: ''
-      }
-    ]);
-
-    // Seed expenses
-    await db.expenses.bulkAdd([
-      {
-        officerName: 'John Ssebunya',
-        department: 'Engineering',
-        category: 'Travel',
-        amount: 850000,
-        description: 'Client site visit - Jinja',
-        date: '2026-04-10',
-        receipt: '',
-        status: 'approved',
-        approvedBy: 'Finance'
-      },
-      {
-        officerName: 'Grace Achieng',
-        department: 'Marketing',
-        category: 'Supplies',
-        amount: 450000,
-        description: 'Marketing materials for trade fair',
-        date: '2026-04-15',
-        receipt: '',
-        status: 'approved',
-        approvedBy: 'Finance'
-      },
-      {
-        officerName: 'Peter Okello',
-        department: 'Human Resources',
-        category: 'Other',
-        amount: 350000,
-        description: 'Staff welfare - team lunch',
-        date: '2026-05-02',
-        receipt: '',
-        status: 'pending',
-        approvedBy: ''
-      }
-    ]);
-
-    // Seed default settings
-    await db.settings.bulkAdd([
-      { key: 'companyName', value: 'Offline HRMS (U) Ltd' },
-      { key: 'companyEmail', value: 'hr@company.co.ug' },
-      { key: 'companyPhone', value: '+256 700 123 456' },
-      { key: 'companyAddress', value: 'P.O. Box 12345, Kampala, Uganda' },
-      { key: 'smtpHost', value: '' },
-      { key: 'smtpPort', value: '587' },
-      { key: 'smtpSecure', value: 'false' },
-      { key: 'smtpUser', value: '' },
-      { key: 'smtpPass', value: '' },
-      { key: 'smtpFrom', value: '' }
-    ]);
-  }
+  await seedDemoData();
 }
 
 // ─── Database Helper Functions ──────────────────────────────────
@@ -424,6 +559,22 @@ const DB = {
     const settings = {};
     records.forEach(r => { settings[r.key] = r.value; });
     return settings;
+  },
+
+  /**
+   * Load full demo data — clears all existing records then seeds fresh.
+   * Used by the Settings "Load Demo Data" button.
+   */
+  async loadDemoData() {
+    // Clear all stores
+    await db.employees.clear();
+    await db.leave.clear();
+    await db.payroll.clear();
+    await db.expenses.clear();
+    await db.settings.clear();
+    await db.departments.clear();
+    // Re-seed with rich demo data
+    await seedDemoData();
   },
 
   // ── Leave Balances ─────────────────────────────────────────

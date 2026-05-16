@@ -156,9 +156,16 @@ const Settings = {
             <button class="btn btn-outline" onclick="Settings.importData()">
               <i class="bi bi-upload"></i> Import Data (JSON)
             </button>
+            <button class="btn btn-success" onclick="Settings.loadDemoData()">
+              <i class="bi bi-rocket-takeoff"></i> Load Demo Data
+            </button>
             <button class="btn btn-danger" onclick="Settings.resetData()">
               <i class="bi bi-exclamation-triangle"></i> Reset All Data
             </button>
+          </div>
+          <div class="hint" style="margin-top:8px">
+            <i class="bi bi-info-circle"></i>
+            "Load Demo Data" replaces all data with 12 employees, leave records, payroll, expenses, and settings — ideal for exploring the system.
           </div>
         </div>
       </div>
@@ -499,5 +506,23 @@ const Settings = {
     await db.delete();
     Utils.toast('All data has been reset. Reloading...', 'success');
     setTimeout(() => location.reload(), 1500);
+  },
+
+  async loadDemoData() {
+    const confirmed = await Utils.confirm(
+      'This will replace ALL existing data with demo data (12 employees, leave records, payroll, expenses). Current data will be lost.<br/><br/><strong>Continue?</strong>',
+      'Load Demo Data'
+    );
+    if (!confirmed) return;
+
+    Utils.toast('Loading demo data...', 'info');
+    try {
+      await DB.loadDemoData();
+      Utils.toast('Demo data loaded! Reloading...', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } catch (err) {
+      console.error('Demo data load error:', err);
+      Utils.toast('Error loading demo data: ' + err.message, 'error');
+    }
   }
 };
