@@ -10,42 +10,42 @@ const Dashboard = {
     container.innerHTML = `
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
           <div class="stat-info">
             <h3>${stats.totalEmployees}</h3>
             <p>Total Employees</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
+          <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
           <div class="stat-info">
             <h3>${Utils.formatCurrency(stats.monthlyPayroll)}</h3>
             <p>Monthly Payroll</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon yellow"><i class="bi bi-calendar-check"></i></div>
+          <div class="stat-icon yellow"><i class="bi bi-calendar-check-fill"></i></div>
           <div class="stat-info">
             <h3>${stats.pendingLeave}</h3>
             <p>Pending Leave</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon red"><i class="bi bi-receipt"></i></div>
+          <div class="stat-icon red"><i class="bi bi-receipt-cutoff"></i></div>
           <div class="stat-info">
             <h3>${Utils.formatCurrency(stats.pendingExpensesTotal)}</h3>
             <p>Pending Expenses</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon cyan"><i class="bi bi-building"></i></div>
+          <div class="stat-icon cyan"><i class="bi bi-buildings-fill"></i></div>
           <div class="stat-info">
             <h3>${stats.departmentCount}</h3>
             <p>Departments</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="bi bi-clock"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-clock-fill"></i></div>
           <div class="stat-info">
             <h3>${stats.pendingPayroll}</h3>
             <p>Pending Payroll</p>
@@ -57,7 +57,7 @@ const Dashboard = {
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">
         <div class="stat-card" style="cursor:pointer;transition:all 0.2s;border-left:4px solid var(--primary);padding:16px" onclick="App.navigate('employees')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(22,101,52,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:20px"><i class="bi bi-people"></i></div>
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:20px"><i class="bi bi-people-fill"></i></div>
             <div>
               <div style="font-size:13px;font-weight:600">Employees</div>
               <div style="font-size:11px;color:var(--text-muted)">Manage staff</div>
@@ -66,7 +66,7 @@ const Dashboard = {
         </div>
         <div class="stat-card" style="cursor:pointer;transition:all 0.2s;border-left:4px solid var(--success);padding:16px" onclick="App.navigate('leave')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(22,101,52,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--success-light);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:20px"><i class="bi bi-calendar-check"></i></div>
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--success-light);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:20px"><i class="bi bi-calendar-check-fill"></i></div>
             <div>
               <div style="font-size:13px;font-weight:600">Leave</div>
               <div style="font-size:11px;color:var(--text-muted)">Apply & track</div>
@@ -75,7 +75,7 @@ const Dashboard = {
         </div>
         <div class="stat-card" style="cursor:pointer;transition:all 0.2s;border-left:4px solid var(--warning);padding:16px" onclick="App.navigate('payroll')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(22,101,52,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--warning-light);display:flex;align-items:center;justify-content:center;color:var(--warning);font-size:20px"><i class="bi bi-cash-stack"></i></div>
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--warning-light);display:flex;align-items:center;justify-content:center;color:var(--warning);font-size:20px"><i class="bi bi-cash-coin"></i></div>
             <div>
               <div style="font-size:13px;font-weight:600">Payroll</div>
               <div style="font-size:11px;color:var(--text-muted)">Process & export</div>
@@ -84,7 +84,7 @@ const Dashboard = {
         </div>
         <div class="stat-card" style="cursor:pointer;transition:all 0.2s;border-left:4px solid var(--danger);padding:16px" onclick="App.navigate('expenses')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(22,101,52,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--danger-light);display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:20px"><i class="bi bi-receipt"></i></div>
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--danger-light);display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:20px"><i class="bi bi-receipt-cutoff"></i></div>
             <div>
               <div style="font-size:13px;font-weight:600">Expenses</div>
               <div style="font-size:11px;color:var(--text-muted)">Record claims</div>
@@ -93,7 +93,7 @@ const Dashboard = {
         </div>
         <div class="stat-card" style="cursor:pointer;transition:all 0.2s;border-left:4px solid var(--info);padding:16px" onclick="App.navigate('reports')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(22,101,52,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--info-light);display:flex;align-items:center;justify-content:center;color:var(--info);font-size:20px"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--info-light);display:flex;align-items:center;justify-content:center;color:var(--info);font-size:20px"><i class="bi bi-bar-chart-fill"></i></div>
             <div>
               <div style="font-size:13px;font-weight:600">Reports</div>
               <div style="font-size:11px;color:var(--text-muted)">View & print</div>
@@ -179,12 +179,12 @@ const Dashboard = {
     if (!container) return;
 
     const items = [
-      { label: 'Active Employees', value: stats.totalEmployees, icon: 'bi-people', color: 'var(--primary)' },
-      { label: 'Monthly Payroll', value: Utils.formatCurrency(stats.monthlyPayroll), icon: 'bi-cash-stack', color: 'var(--success)' },
-      { label: 'Pending Leave', value: stats.pendingLeave, icon: 'bi-calendar-check', color: 'var(--warning)' },
-      { label: 'Departments', value: stats.departmentCount, icon: 'bi-building', color: 'var(--info)' },
-      { label: 'Pending Expenses', value: Utils.formatCurrency(stats.pendingExpensesTotal), icon: 'bi-receipt', color: 'var(--danger)' },
-      { label: 'Pending Payroll', value: stats.pendingPayroll, icon: 'bi-clock', color: 'var(--secondary)' }
+      { label: 'Active Employees', value: stats.totalEmployees, icon: 'bi-people-fill', color: 'var(--primary)' },
+      { label: 'Monthly Payroll', value: Utils.formatCurrency(stats.monthlyPayroll), icon: 'bi-cash-coin', color: 'var(--success)' },
+      { label: 'Pending Leave', value: stats.pendingLeave, icon: 'bi-calendar-check-fill', color: 'var(--warning)' },
+      { label: 'Departments', value: stats.departmentCount, icon: 'bi-buildings-fill', color: 'var(--info)' },
+      { label: 'Pending Expenses', value: Utils.formatCurrency(stats.pendingExpensesTotal), icon: 'bi-receipt-cutoff', color: 'var(--danger)' },
+      { label: 'Pending Payroll', value: stats.pendingPayroll, icon: 'bi-clock-fill', color: 'var(--secondary)' }
     ];
 
     container.innerHTML = items.map(item => `

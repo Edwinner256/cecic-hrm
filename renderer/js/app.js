@@ -185,10 +185,10 @@ const App = {
       const online = await Utils.isOnline();
       if (online) {
         statusEl.className = 'connection-status online';
-        statusEl.innerHTML = '<i class="bi bi-wifi"></i><span>Online</span>';
+        statusEl.innerHTML = '<i class="bi bi-cloud-check-fill"></i><span>Online</span>';
       } else {
         statusEl.className = 'connection-status offline';
-        statusEl.innerHTML = '<i class="bi bi-wifi-off"></i><span>Offline</span>';
+        statusEl.innerHTML = '<i class="bi bi-cloud-slash-fill"></i><span>Offline</span>';
       }
     };
 

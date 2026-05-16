@@ -13,35 +13,35 @@ const Reports = {
 
       <div class="stats-grid">
         <div class="stat-card" style="cursor:pointer" onclick="Reports.generateEmployeeList()">
-          <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
           <div class="stat-info">
             <h3>Employee List</h3>
             <p>View & print employee directory</p>
           </div>
         </div>
         <div class="stat-card" style="cursor:pointer" onclick="Reports.generateLeaveReport()">
-          <div class="stat-icon yellow"><i class="bi bi-calendar-check"></i></div>
+          <div class="stat-icon yellow"><i class="bi bi-calendar-check-fill"></i></div>
           <div class="stat-info">
             <h3>Leave Report</h3>
             <p>Leave records summary</p>
           </div>
         </div>
         <div class="stat-card" style="cursor:pointer" onclick="Reports.generatePayrollReport()">
-          <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
+          <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
           <div class="stat-info">
             <h3>Payroll Report</h3>
             <p>Payroll summary by period</p>
           </div>
         </div>
         <div class="stat-card" style="cursor:pointer" onclick="Reports.generateExpenseReport()">
-          <div class="stat-icon red"><i class="bi bi-receipt"></i></div>
+          <div class="stat-icon red"><i class="bi bi-receipt-cutoff"></i></div>
           <div class="stat-info">
             <h3>Expense Report</h3>
             <p>Expense claims summary</p>
           </div>
         </div>
         <div class="stat-card" style="cursor:pointer" onclick="Reports.generateExpenseCategoryReport()">
-          <div class="stat-icon orange" style="background:var(--warning-light);color:var(--warning)"><i class="bi bi-pie-chart"></i></div>
+          <div class="stat-icon orange" style="background:var(--warning-light);color:var(--warning)"><i class="bi bi-pie-chart-fill"></i></div>
           <div class="stat-info">
             <h3>Expenses by Category</h3>
             <p>Category-wise expense breakdown</p>
@@ -56,19 +56,19 @@ const Reports = {
           <h3>Report Preview</h3>
           <div id="reportActions" style="display:none">
             <button class="btn btn-primary" onclick="Reports.printReport()">
-              <i class="bi bi-printer"></i> Print
+              <i class="bi bi-printer-fill"></i> Print
             </button>
             <button class="btn btn-outline" onclick="Reports.exportReport()">
-              <i class="bi bi-download"></i> Export HTML
+              <i class="bi bi-file-earmark-arrow-down"></i> Export HTML
             </button>
             <button class="btn btn-outline" onclick="Reports.exportReportCSV()">
-              <i class="bi bi-filetype-csv"></i> Export CSV
+              <i class="bi bi-file-earmark-spreadsheet-fill"></i> Export CSV
             </button>
           </div>
         </div>
         <div class="card-body" id="reportPreview">
           <div class="empty-state">
-            <i class="bi bi-file-earmark-bar-graph"></i>
+            <i class="bi bi-bar-chart-fill"></i>
             <h3>Select a Report</h3>
             <p>Click on one of the report cards above to generate a report.</p>
           </div>

@@ -29,14 +29,14 @@ const Leave = {
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="bi bi-calendar-check"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-calendar-check-fill"></i></div>
           <div class="stat-info">
             <h3>${records.filter(l => l.status === 'approved').length}</h3>
             <p>Approved</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon yellow"><i class="bi bi-clock"></i></div>
+          <div class="stat-icon yellow"><i class="bi bi-clock-fill"></i></div>
           <div class="stat-info">
             <h3>${records.filter(l => l.status === 'pending').length}</h3>
             <p>Pending</p>
@@ -107,7 +107,7 @@ const Leave = {
 
   renderRows(records, employees) {
     if (!records || records.length === 0) {
-      return `<tr><td colspan="9"><div class="empty-state"><i class="bi bi-calendar-check"></i><h3>No Leave Records</h3><p>No leave applications found.</p></div></td></tr>`;
+      return `<tr><td colspan="9"><div class="empty-state"><i class="bi bi-calendar-check-fill"></i><h3>No Leave Records</h3><p>No leave applications found.</p></div></td></tr>`;
     }
 
     // Build photo lookup
@@ -145,10 +145,10 @@ const Leave = {
         <td>
           <div style="display:flex;gap:4px">
             ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success" onclick="Leave.approve(${r.id})" title="Approve"><i class="bi bi-check-lg"></i></button>
-              <button class="btn btn-sm btn-danger" onclick="Leave.reject(${r.id})" title="Reject"><i class="bi bi-x-lg"></i></button>
+              <button class="btn btn-sm btn-success" onclick="Leave.approve(${r.id})" title="Approve"><i class="bi bi-check-circle-fill"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="Leave.reject(${r.id})" title="Reject"><i class="bi bi-x-circle-fill"></i></button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="Leave.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="Leave.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash3"></i></button>
           </div>
         </td>
       </tr>`;

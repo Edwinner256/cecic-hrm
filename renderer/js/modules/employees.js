@@ -32,7 +32,7 @@ const Employees = {
         </div>
         <div class="toolbar-right">
           <button class="btn btn-primary" onclick="Employees.showAddModal()">
-            <i class="bi bi-person-plus"></i> Add Employee
+            <i class="bi bi-person-plus-fill"></i> Add Employee
           </button>
         </div>
       </div>
@@ -72,7 +72,7 @@ const Employees = {
         <tr>
           <td colspan="7">
             <div class="empty-state">
-              <i class="bi bi-people"></i>
+              <i class="bi bi-people-fill"></i>
               <h3>No Employees Found</h3>
               <p>Add your first employee to get started.</p>
             </div>
@@ -108,10 +108,10 @@ const Employees = {
               <i class="bi bi-eye"></i>
             </button>
             <button class="btn btn-sm btn-outline" onclick="Employees.showEditModal(${emp.id})" title="Edit">
-              <i class="bi bi-pencil"></i>
+              <i class="bi bi-pencil-square"></i>
             </button>
             <button class="btn btn-sm btn-danger" onclick="Employees.confirmDelete(${emp.id})" title="Delete">
-              <i class="bi bi-trash"></i>
+              <i class="bi bi-trash3"></i>
             </button>
           </div>
         </td>

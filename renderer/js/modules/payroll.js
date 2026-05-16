@@ -29,10 +29,10 @@ const Payroll = {
               <i class="bi bi-lightning-charge"></i> Generate All
             </button>
             <button class="btn btn-success" onclick="Payroll.downloadCSV()">
-              <i class="bi bi-download"></i> Download CSV
+              <i class="bi bi-file-earmark-spreadsheet-fill"></i> Download CSV
             </button>
             <button class="btn btn-outline" onclick="Payroll.showProcessModal()">
-              <i class="bi bi-person-plus"></i> Add Individual
+              <i class="bi bi-person-plus-fill"></i> Add Individual
             </button>
             <select class="form-control" id="payrollStatusFilter" style="width:auto">
               <option value="">All Status</option>
@@ -51,7 +51,7 @@ const Payroll = {
           <h3>Payroll Records</h3>
           <div style="display:flex;gap:8px">
             <button class="btn btn-sm btn-outline" onclick="Payroll.printPayroll()">
-              <i class="bi bi-printer"></i> Print
+              <i class="bi bi-printer-fill"></i> Print
             </button>
           </div>
         </div>
@@ -113,7 +113,7 @@ const Payroll = {
 
   renderRows(records, allEmployees) {
     if (!records || records.length === 0) {
-      return `<tr><td colspan="10"><div class="empty-state"><i class="bi bi-cash-stack"></i><h3>No Payroll Records</h3><p>Click "Generate All" to create payroll for all employees, or "Add Individual" for a single employee.</p></div></td></tr>`;
+      return `<tr><td colspan="10"><div class="empty-state"><i class="bi bi-cash-coin"></i><h3>No Payroll Records</h3><p>Click "Generate All" to create payroll for all employees, or "Add Individual" for a single employee.</p></div></td></tr>`;
     }
 
     // Build lookup for employee data (photo, seniority)
@@ -157,9 +157,9 @@ const Payroll = {
         <td>
           <div style="display:flex;gap:4px">
             ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success" onclick="Payroll.markPaid(${r.id})" title="Mark as Paid"><i class="bi bi-check-lg"></i></button>
+              <button class="btn btn-sm btn-success" onclick="Payroll.markPaid(${r.id})" title="Mark as Paid"><i class="bi bi-check-circle-fill"></i></button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="Payroll.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="Payroll.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash3"></i></button>
           </div>
         </td>
       </tr>`;

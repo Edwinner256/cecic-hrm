@@ -34,7 +34,7 @@ const Expenses = {
         </div>
         <div class="toolbar-right">
           <button class="btn btn-primary" onclick="Expenses.showAddModal()">
-            <i class="bi bi-plus-circle"></i> Record Expense
+            <i class="bi bi-plus-circle-fill"></i> Record Expense
           </button>
         </div>
       </div>
@@ -48,7 +48,7 @@ const Expenses = {
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon yellow"><i class="bi bi-clock"></i></div>
+          <div class="stat-icon yellow"><i class="bi bi-clock-fill"></i></div>
           <div class="stat-info">
             <h3>${Utils.formatCurrency(pendingTotal)}</h3>
             <p>Pending Total</p>
@@ -62,7 +62,7 @@ const Expenses = {
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="bi bi-receipt"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-receipt-cutoff"></i></div>
           <div class="stat-info">
             <h3>${records.length}</h3>
             <p>Total Claims</p>
@@ -103,7 +103,7 @@ const Expenses = {
 
   renderRows(records) {
     if (!records || records.length === 0) {
-      return `<tr><td colspan="8"><div class="empty-state"><i class="bi bi-receipt"></i><h3>No Expenses</h3><p>No expense records found.</p></div></td></tr>`;
+      return `<tr><td colspan="8"><div class="empty-state"><i class="bi bi-receipt-cutoff"></i><h3>No Expenses</h3><p>No expense records found.</p></div></td></tr>`;
     }
 
     return records.map(r => {
@@ -120,10 +120,10 @@ const Expenses = {
           <div style="display:flex;gap:4px">
             <button class="btn btn-sm btn-outline" onclick="Expenses.showViewModal(${r.id})" title="View"><i class="bi bi-eye"></i></button>
             ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success" onclick="Expenses.approve(${r.id})" title="Approve"><i class="bi bi-check-lg"></i></button>
-              <button class="btn btn-sm btn-danger" onclick="Expenses.reject(${r.id})" title="Reject"><i class="bi bi-x-lg"></i></button>
+              <button class="btn btn-sm btn-success" onclick="Expenses.approve(${r.id})" title="Approve"><i class="bi bi-check-circle-fill"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="Expenses.reject(${r.id})" title="Reject"><i class="bi bi-x-circle-fill"></i></button>
             ` : ''}
-            <button class="btn btn-sm btn-danger" onclick="Expenses.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="Expenses.confirmDelete(${r.id})" title="Delete"><i class="bi bi-trash3"></i></button>
           </div>
         </td>
       </tr>`;

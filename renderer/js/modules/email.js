@@ -10,7 +10,7 @@ const Email = {
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon ${online ? 'green' : 'red'}">
-            <i class="bi ${online ? 'bi-wifi' : 'bi-wifi-off'}"></i>
+            <i class="bi ${online ? 'bi-cloud-check-fill' : 'bi-cloud-slash-fill'}"></i>
           </div>
           <div class="stat-info">
             <h3>${online ? 'Online' : 'Offline'}</h3>
@@ -19,7 +19,7 @@ const Email = {
         </div>
         <div class="stat-card">
           <div class="stat-icon ${settings.smtpHost ? 'green' : 'yellow'}">
-            <i class="bi bi-envelope"></i>
+            <i class="bi bi-envelope-fill"></i>
           </div>
           <div class="stat-info">
             <h3>${settings.smtpHost ? 'Configured' : 'Not Set'}</h3>
@@ -27,7 +27,7 @@ const Email = {
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="bi bi-send"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-send-fill"></i></div>
           <div class="stat-info">
             <h3 id="sentCount">0</h3>
             <p>Emails Sent (this session)</p>
@@ -62,10 +62,10 @@ const Email = {
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" id="btnSendEmail">
-                <i class="bi bi-send"></i> Send Email
+                <i class="bi bi-send-fill"></i> Send Email
               </button>
               <button type="button" class="btn btn-outline" onclick="Email.clearForm()">
-                <i class="bi bi-eraser"></i> Clear
+                <i class="bi bi-x-circle"></i> Clear
               </button>
             </div>
           </form>
@@ -77,16 +77,16 @@ const Email = {
         <div class="card-body">
           <div style="display:flex;flex-wrap:wrap;gap:8px">
             <button class="btn btn-outline" onclick="Email.loadTemplate('payroll')">
-              <i class="bi bi-cash"></i> Payroll Notification
+              <i class="bi bi-cash-coin"></i> Payroll Notification
             </button>
             <button class="btn btn-outline" onclick="Email.loadTemplate('leave')">
-              <i class="bi bi-calendar-check"></i> Leave Approval
+              <i class="bi bi-calendar-check-fill"></i> Leave Approval
             </button>
             <button class="btn btn-outline" onclick="Email.loadTemplate('expense')">
-              <i class="bi bi-receipt"></i> Expense Receipt
+              <i class="bi bi-receipt-cutoff"></i> Expense Receipt
             </button>
             <button class="btn btn-outline" onclick="Email.loadTemplate('welcome')">
-              <i class="bi bi-person-plus"></i> Welcome Email
+              <i class="bi bi-person-plus-fill"></i> Welcome Email
             </button>
           </div>
         </div>
@@ -142,7 +142,7 @@ const Email = {
 
     const btn = document.getElementById('btnSendEmail');
     btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sending...';
+    btn.innerHTML = '<i class="bi bi-hourglass"></i> Sending...';
 
     try {
       const payload = {
@@ -196,7 +196,7 @@ const Email = {
       Utils.toast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-send"></i> Send Email';
+      btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Email';
     }
   },
 

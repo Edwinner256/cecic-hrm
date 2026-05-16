@@ -8,28 +8,28 @@ const Settings = {
     container.innerHTML = `
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+          <div class="stat-icon blue"><i class="bi bi-buildings-fill"></i></div>
           <div class="stat-info">
             <h3>${Utils.escapeHtml(settings.companyName || 'Not Set')}</h3>
             <p>Company Name</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon green"><i class="bi bi-envelope"></i></div>
+          <div class="stat-icon green"><i class="bi bi-envelope-fill"></i></div>
           <div class="stat-info">
             <h3>${settings.smtpHost ? 'Configured' : 'Not Configured'}</h3>
             <p>SMTP / Email</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon cyan"><i class="bi bi-database"></i></div>
+          <div class="stat-icon cyan"><i class="bi bi-database-fill"></i></div>
           <div class="stat-info">
             <h3 id="recordCount">...</h3>
             <p>Total Records</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon yellow"><i class="bi bi-hdd-stack"></i></div>
+          <div class="stat-icon yellow"><i class="bi bi-hdd-stack-fill"></i></div>
           <div class="stat-info">
             <h3 id="dbSize">...</h3>
             <p>Database Size</p>
@@ -73,14 +73,14 @@ const Settings = {
                   <div>
                     <div style="font-weight:600;font-size:13px">Current Logo</div>
                     <button type="button" class="btn btn-sm btn-outline mt-8" onclick="Settings.removeLogo()">
-                      <i class="bi bi-trash"></i> Remove
+                      <i class="bi bi-trash3"></i> Remove
                     </button>
                   </div>
                 </div>
               </div>
             </div>
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Company Info</button>
+              <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Save Company Info</button>
             </div>
           </form>
         </div>
@@ -125,8 +125,8 @@ const Settings = {
               <div class="hint">The "From" address that recipients will see.</div>
             </div>
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save SMTP Settings</button>
-              <button type="button" class="btn btn-outline" onclick="Settings.testEmail()"><i class="bi bi-send"></i> Test Email</button>
+              <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Save SMTP Settings</button>
+              <button type="button" class="btn btn-outline" onclick="Settings.testEmail()"><i class="bi bi-send-fill"></i> Test Email</button>
             </div>
           </form>
         </div>
@@ -136,7 +136,7 @@ const Settings = {
         <div class="card-header">
           <h3>Department Management</h3>
           <button class="btn btn-sm btn-primary" onclick="Settings.showAddDepartmentModal()">
-            <i class="bi bi-plus-lg"></i> Add Department
+            <i class="bi bi-plus-circle-fill"></i> Add Department
           </button>
         </div>
         <div class="card-body">
@@ -151,16 +151,16 @@ const Settings = {
         <div class="card-body">
           <div style="display:flex;flex-wrap:wrap;gap:12px">
             <button class="btn btn-outline" onclick="Settings.exportData()">
-              <i class="bi bi-download"></i> Export All Data (JSON)
+              <i class="bi bi-file-earmark-arrow-down"></i> Export All Data (JSON)
             </button>
             <button class="btn btn-outline" onclick="Settings.importData()">
-              <i class="bi bi-upload"></i> Import Data (JSON)
+              <i class="bi bi-file-earmark-arrow-up"></i> Import Data (JSON)
             </button>
             <button class="btn btn-success" onclick="Settings.loadDemoData()">
-              <i class="bi bi-rocket-takeoff"></i> Load Demo Data
+              <i class="bi bi-rocket-takeoff-fill"></i> Load Demo Data
             </button>
             <button class="btn btn-danger" onclick="Settings.resetData()">
-              <i class="bi bi-exclamation-triangle"></i> Reset All Data
+              <i class="bi bi-exclamation-triangle-fill"></i> Reset All Data
             </button>
           </div>
           <div class="hint" style="margin-top:8px">
@@ -279,7 +279,7 @@ const Settings = {
                   <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${count} employee${count !== 1 ? 's' : ''}</div>
                 </div>
                 <button class="btn btn-sm btn-danger" onclick="Settings.deleteDepartment(${d.id})" title="Delete" ${count > 0 ? 'disabled style="opacity:0.4"' : ''}>
-                  <i class="bi bi-trash"></i>
+                  <i class="bi bi-trash3"></i>
                 </button>
               </div>
             `;
@@ -309,7 +309,7 @@ const Settings = {
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" data-cancel>Cancel</button>
-          <button class="btn btn-primary" id="saveDeptBtn"><i class="bi bi-plus-lg"></i> Add Department</button>
+          <button class="btn btn-primary" id="saveDeptBtn"><i class="bi bi-plus-circle-fill"></i> Add Department</button>
         </div>
       </div>
     `;
