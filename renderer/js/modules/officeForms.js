@@ -531,41 +531,21 @@ const OfficeForms = {
     });
   },
 
-  // ─── Print a form ────────────────────────────────────────
-  async printForm(id) {
-    try {
-      const form = await DB.getOfficeForm(id);
-      if (!form) { Utils.toast('Form not found', 'error'); return; }
+  // ─── Build print HTML for a form ─────────────────────────
+  buildPrintHtml(form, formData, def, company, printedBy, printedAt) {
+    const logoHtml = company.companyLogo
+      ? `<img src="${Utils.escapeHtml(company.companyLogo)}" style="height:50px;margin-bottom:8px" alt="Logo" />`
+      : '';
 
-      // Record printing
-      const printedBy = sessionStorage.getItem('hrms_user') || 'Unknown';
-      const printedAt = new Date().toISOString();
-      await DB.updateOfficeForm(id, { printedBy, printedAt, status: 'printed' });
+    let detailsRows = '';
+    for (const [key, value] of Object.entries(formData)) {
+      if (key === 'formData' || key === 'id' || key === 'formType' || key === 'createdDate' || key === 'createdBy' || key === 'printedBy' || key === 'printedAt' || key === 'status' || key === 'formNumber' || key === 'title') continue;
+      if (!value) continue;
+      const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      detailsRows += `<tr><td style="font-weight:500;color:#57534e;width:40%">${Utils.escapeHtml(label)}</td><td style="font-weight:600">${Utils.escapeHtml(String(value))}</td></tr>`;
+    }
 
-      const def = this.FORM_TYPES[form.formType];
-      const company = await DB.getAllSettings();
-
-      let formData = {};
-      try {
-        formData = typeof form.formData === 'string' ? JSON.parse(form.formData) : form.formData;
-      } catch (e) {
-        formData = form;
-      }
-
-      const logoHtml = company.companyLogo
-        ? `<img src="${Utils.escapeHtml(company.companyLogo)}" style="height:50px;margin-bottom:8px" alt="Logo" />`
-        : '';
-
-      // Build form-specific print content
-      let detailsRows = '';
-      for (const [key, value] of Object.entries(formData)) {
-        if (key === 'formData' || key === 'id' || key === 'formType' || key === 'createdDate' || key === 'createdBy' || key === 'printedBy' || key === 'printedAt' || key === 'status' || key === 'formNumber' || key === 'title') continue;
-        if (!value) continue;
-        const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        detailsRows += `<tr><td style="font-weight:500;color:#57534e;width:40%">${Utils.escapeHtml(label)}</td><td style="font-weight:600">${Utils.escapeHtml(String(value))}</td></tr>`;
-      }
-
-      const html = `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -647,11 +627,63 @@ const OfficeForms = {
   </div>
 </body>
 </html>`;
+  },
 
-      Utils.printHTML(html, `${def ? def.label : 'Form'} - ${form.formNumber || ''}`);
+  // ─── Preview then Print a form ───────────────────────────
+  async printForm(id) {
+    try {
+      const form = await DB.getOfficeForm(id);
+      if (!form) { Utils.toast('Form not found', 'error'); return; }
 
-      Utils.toast(`Form printed by ${printedBy}`, 'success');
-      this.render();
+      const def = this.FORM_TYPES[form.formType];
+      const company = await DB.getAllSettings();
+      const printedBy = sessionStorage.getItem('hrms_user') || 'Unknown';
+      const printedAt = new Date().toISOString();
+
+      let formData = {};
+      try {
+        formData = typeof form.formData === 'string' ? JSON.parse(form.formData) : form.formData;
+      } catch (e) {
+        formData = form;
+      }
+
+      // Build the print HTML
+      const html = this.buildPrintHtml(form, formData, def, company, printedBy, printedAt);
+
+      // Show preview modal before printing
+      const { close } = Utils.showModal({
+        title: `📄 Preview: ${def ? def.label : 'Form'} — ${form.formNumber || ''}`,
+        size: 'modal-lg',
+        content: `
+          <div style="margin-bottom:12px;padding:10px 14px;background:#f0fdf4;border-radius:6px;font-size:13px;color:#166534;display:flex;align-items:center;gap:8px">
+            <i class="bi bi-info-circle-fill"></i>
+            Preview below — click <strong>Print</strong> to send to printer or <strong>Cancel</strong> to go back.
+          </div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff">
+            <iframe id="printPreviewFrame" srcdoc="${Utils.escapeHtml(html)}" style="width:100%;height:520px;border:none"></iframe>
+          </div>
+        `,
+        footer: `
+          <button class="btn btn-outline" data-cancel>Cancel</button>
+          <button class="btn btn-primary" id="doPrintBtn"><i class="bi bi-printer-fill"></i> Print</button>
+        `
+      });
+
+      // Wire up the Print button
+      setTimeout(() => {
+        const printBtn = document.getElementById('doPrintBtn');
+        if (printBtn) {
+          printBtn.addEventListener('click', async () => {
+            // Record printing
+            await DB.updateOfficeForm(id, { printedBy, printedAt, status: 'printed' });
+            close();
+            Utils.printHTML(html, `${def ? def.label : 'Form'} - ${form.formNumber || ''}`);
+            Utils.toast(`Form printed by ${printedBy}`, 'success');
+            this.render();
+          });
+        }
+      }, 50);
+
     } catch (err) {
       console.error('Form print error:', err);
       Utils.toast('Error printing form: ' + err.message, 'error');
