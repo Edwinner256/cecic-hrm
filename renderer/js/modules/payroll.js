@@ -26,7 +26,7 @@ const Payroll = {
               </select>
             </div>
             <button class="btn btn-primary" onclick="Payroll.batchGenerate()" title="Generate payroll for ALL active employees for the selected month">
-              <i class="bi bi-lightning-charge"></i> Generate All
+              <i class="bi bi-lightning-charge-fill"></i> Generate All
             </button>
             <button class="btn btn-success" onclick="Payroll.downloadCSV()">
               <i class="bi bi-file-earmark-spreadsheet-fill"></i> Download CSV
@@ -156,6 +156,7 @@ const Payroll = {
         <td>${r.paidDate ? Utils.formatDate(r.paidDate) : '—'}</td>
         <td>
           <div style="display:flex;gap:4px">
+            <button class="btn btn-sm btn-outline" onclick="Payroll.printPayslip(${r.id})" title="Print Payslip"><i class="bi bi-receipt-fill"></i></button>
             ${r.status === 'pending' ? `
               <button class="btn btn-sm btn-success" onclick="Payroll.markPaid(${r.id})" title="Mark as Paid"><i class="bi bi-check-circle-fill"></i></button>
             ` : ''}
@@ -219,11 +220,11 @@ const Payroll = {
         <div class="card-body">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
             ${[
-              { key: 'new', label: 'New (< 1 yr)', icon: 'bi-star', class: 'seniority-new' },
-              { key: 'junior', label: 'Junior (1-2 yrs)', icon: 'bi-arrow-up', class: 'seniority-junior' },
-              { key: 'mid', label: 'Mid (3-4 yrs)', icon: 'bi-bar-chart', class: 'seniority-mid' },
-              { key: 'senior', label: 'Senior (5-9 yrs)', icon: 'bi-award', class: 'seniority-senior' },
-              { key: 'veteran', label: 'Veteran (10+ yrs)', icon: 'bi-trophy', class: 'seniority-veteran' }
+              { key: 'new', label: 'New (< 1 yr)', icon: 'bi-star-fill', class: 'seniority-new' },
+              { key: 'junior', label: 'Junior (1-2 yrs)', icon: 'bi-arrow-up-circle-fill', class: 'seniority-junior' },
+              { key: 'mid', label: 'Mid (3-4 yrs)', icon: 'bi-bar-chart-fill', class: 'seniority-mid' },
+              { key: 'senior', label: 'Senior (5-9 yrs)', icon: 'bi-award-fill', class: 'seniority-senior' },
+              { key: 'veteran', label: 'Veteran (10+ yrs)', icon: 'bi-trophy-fill', class: 'seniority-veteran' }
             ].map(g => `
               <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)">
                 <div style="font-size:28px;font-weight:700;color:var(--text)">${levels[g.key].length}</div>
@@ -440,19 +441,8 @@ const Payroll = {
 </body>
 </html>`;
 
-      // Use Reports module approach for printing
-      if (window.electronAPI) {
-        window.electronAPI.printContent(html)
-          .then(result => {
-            if (!result.success) Utils.toast('Print failed: ' + result.error, 'error');
-          });
-      } else {
-        const printWin = window.open('', '_blank');
-        printWin.document.write(html);
-        printWin.document.close();
-        printWin.focus();
-        printWin.print();
-      }
+      // Use safe print utility
+      Utils.printHTML(html, `Payroll - ${Utils.getMonthName(month)} ${year}`);
     });
   },
 
@@ -550,6 +540,151 @@ const Payroll = {
       await DB.deletePayroll(id);
       Utils.toast('Payroll record deleted', 'success');
       this.refresh();
+    }
+  },
+
+  async printPayslip(id) {
+    try {
+      const record = await db.payroll.get(typeof id === 'string' ? parseInt(id, 10) : id);
+      if (!record) { Utils.toast('Payroll record not found', 'error'); return; }
+
+      const company = await DB.getAllSettings();
+      const adminName = company.adminDisplayName || 'Finance & Admin';
+      const adminTitle = company.adminTitle || 'Finance & Admin Officer';
+
+      // Find employee details
+      let emp = await DB.getEmployeeByEmpId(record.employeeId);
+      if (!emp) {
+        // Try by name
+        const allEmp = await DB.getAllEmployees();
+        emp = allEmp.find(e => `${e.firstName} ${e.lastName}` === record.employeeName);
+      }
+
+      const periodLabel = `${Utils.getMonthName(record.month)} ${record.year}`;
+      const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+      const logoHtml = company.companyLogo
+        ? `<img src="${Utils.escapeHtml(company.companyLogo)}" style="height:50px;margin-bottom:8px" alt="Logo" />`
+        : '';
+
+      const empId = emp ? emp.employeeId : record.employeeId;
+      const empDept = emp ? emp.department : '—';
+      const empPosition = emp ? emp.position : '—';
+      const empName = record.employeeName;
+
+      const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Payslip - ${empName} - ${periodLabel}</title>
+  <style>
+    @page { margin: 15mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1a2e05; padding: 30px; max-width: 700px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 20px; border-bottom: 3px double #166534; padding-bottom: 14px; }
+    .header h1 { font-size: 24px; margin: 4px 0; color: #166534; letter-spacing: 2px; }
+    .header h2 { font-size: 18px; margin: 4px 0; color: #7c3aed; font-weight: 500; }
+    .header .address { font-size: 11px; color: #57534e; }
+    .emp-info { display: flex; justify-content: space-between; background: #f0fdf4; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 12px; }
+    .emp-info div { line-height: 1.6; }
+    .emp-info .label { color: #57534e; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .emp-info .value { font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th { background: #166534; color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    tr:last-child td { border-bottom: 2px solid #166534; font-weight: 700; }
+    .total-label { text-align: right; padding-right: 20px; }
+    .amount { text-align: right; font-family: 'Courier New', monospace; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
+    .signature-box { width: 45%; }
+    .signature-box .line { border-top: 1px solid #1a2e05; margin-top: 36px; padding-top: 6px; }
+    .signature-box .name { font-weight: 600; font-size: 12px; margin-top: 4px; }
+    .signature-box .title { font-size: 10px; color: #57534e; }
+    .signature-box .date-line { margin-top: 20px; font-size: 11px; color: #57534e; }
+    .signature-box .date-line span { border-bottom: 1px solid #57534e; padding: 0 40px 2px; }
+    .footer { text-align: center; margin-top: 30px; padding-top: 12px; border-top: 1px solid #d4d4d4; font-size: 10px; color: #57534e; }
+    .no-print { text-align: center; margin-bottom: 16px; }
+    @media print { .no-print { display: none; } body { padding: 0; } }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    .badge-success { background: #dcfce7; color: #166534; }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()" style="padding:8px 24px;background:#166534;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">
+      🖨 Print Payslip
+    </button>
+    <br/><br/>
+  </div>
+
+  <div class="header">
+    ${logoHtml}
+    <h1>${Utils.escapeHtml(company.companyName || 'Offline HRMS')}</h1>
+    <h2>PAYSLIP</h2>
+    <div>${periodLabel}</div>
+    ${company.companyAddress ? `<div class="address">${Utils.escapeHtml(company.companyAddress)}</div>` : ''}
+  </div>
+
+  <div class="emp-info">
+    <div>
+      <div class="label">Employee</div>
+      <div class="value">${Utils.escapeHtml(empName)}</div>
+      <div class="label" style="margin-top:6px">Employee ID</div>
+      <div class="value">${Utils.escapeHtml(empId)}</div>
+    </div>
+    <div>
+      <div class="label">Department</div>
+      <div class="value">${Utils.escapeHtml(empDept)}</div>
+      <div class="label" style="margin-top:6px">Position</div>
+      <div class="value">${Utils.escapeHtml(empPosition)}</div>
+    </div>
+    <div style="text-align:right">
+      <div class="label">Pay Date</div>
+      <div class="value">${record.paidDate ? Utils.formatDate(record.paidDate) : 'Pending'}</div>
+      <div class="label" style="margin-top:6px">Status</div>
+      <div class="value"><span class="badge ${record.status === 'paid' ? 'badge-success' : ''}">${record.status.toUpperCase()}</span></div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:60%">Description</th><th style="width:40%" class="amount">Amount (UGX)</th></tr></thead>
+    <tbody>
+      <tr><td>Basic Salary</td><td class="amount">${Utils.formatCurrency(record.basicSalary)}</td></tr>
+      <tr><td>Allowances</td><td class="amount">${Utils.formatCurrency(record.allowances)}</td></tr>
+      <tr><td>Deductions</td><td class="amount" style="color:#dc2626">−${Utils.formatCurrency(record.deductions)}</td></tr>
+      <tr><td class="total-label"><strong>NET PAY</strong></td><td class="amount"><strong>${Utils.formatCurrency(record.netPay)}</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div style="background:#f0fdf4;padding:10px 16px;border-radius:6px;font-size:11px;color:#57534e;margin:8px 0">
+    <strong>Amount in Words:</strong> ${Utils.numberToWords(record.netPay)} Uganda Shillings Only
+  </div>
+
+  <div class="signatures">
+    <div class="signature-box">
+      <div class="line"></div>
+      <div class="name">${Utils.escapeHtml(adminName)}</div>
+      <div class="title">${Utils.escapeHtml(adminTitle)}</div>
+      <div class="date-line">Date: <span></span></div>
+    </div>
+    <div class="signature-box" style="text-align:right">
+      <div class="line"></div>
+      <div class="name">${Utils.escapeHtml(empName)}</div>
+      <div class="title">Employee / Staff</div>
+      <div class="date-line">Date: <span></span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    CECIC, ${Utils.escapeHtml(company.companyName || 'Offline HRMS')} &mdash; Confidential &mdash; Generated ${dateStr}
+    ${company.companyAddress ? `<br/>${Utils.escapeHtml(company.companyAddress)}` : ''}
+  </div>
+</body>
+</html>`;
+
+      // Open print window
+      Utils.printHTML(html, `Payslip - ${empName} - ${periodLabel}`);
+    } catch (err) {
+      console.error('Payslip error:', err);
+      Utils.toast('Error generating payslip: ' + err.message, 'error');
     }
   }
 };

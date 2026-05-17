@@ -215,6 +215,8 @@ const App = {
       employees: 'Employee Management',
       leave: 'Leave Management',
       payroll: 'Payroll',
+      pettyCash: 'Petty Cash Management',
+      officeForms: 'Forms & Documents',
       expenses: 'Officer Expenses',
       reports: 'Reports',
       email: 'Email / Sync',
@@ -236,6 +238,8 @@ const App = {
         case 'employees': await Employees.render(); break;
         case 'leave': await Leave.render(); break;
         case 'payroll': await Payroll.render(); break;
+        case 'pettyCash': await PettyCash.render(); break;
+        case 'officeForms': await OfficeForms.render(); break;
         case 'expenses': await Expenses.render(); break;
         case 'reports': await Reports.render(); break;
         case 'email': await Email.render(); break;

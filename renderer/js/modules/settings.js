@@ -63,6 +63,17 @@ const Settings = {
             </div>
             <div class="form-row">
               <div class="form-group">
+                <label>Finance &amp; Admin Name</label>
+                <input type="text" class="form-control" name="adminDisplayName" value="${Utils.escapeHtml(settings.adminDisplayName || 'Finance & Admin')}" placeholder="Finance & Admin Officer" />
+                <div class="hint">This name will appear on payslips and reports as the approving authority.</div>
+              </div>
+              <div class="form-group">
+                <label>Finance &amp; Admin Title</label>
+                <input type="text" class="form-control" name="adminTitle" value="${Utils.escapeHtml(settings.adminTitle || 'Finance & Admin Officer')}" placeholder="Finance & Admin Officer" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
                 <label>Company Logo</label>
                 <input type="file" class="form-control" id="companyLogoInput" accept="image/*" />
                 <div class="hint">Upload your company logo (PNG, JPG). It will appear in reports, forms, and the sidebar.</div>
@@ -164,7 +175,7 @@ const Settings = {
             </button>
           </div>
           <div class="hint" style="margin-top:8px">
-            <i class="bi bi-info-circle"></i>
+            <i class="bi bi-info-circle-fill"></i>
             "Load Demo Data" replaces all data with 12 employees, leave records, payroll, expenses, and settings — ideal for exploring the system.
           </div>
         </div>

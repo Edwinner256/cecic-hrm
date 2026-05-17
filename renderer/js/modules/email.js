@@ -65,7 +65,7 @@ const Email = {
                 <i class="bi bi-send-fill"></i> Send Email
               </button>
               <button type="button" class="btn btn-outline" onclick="Email.clearForm()">
-                <i class="bi bi-x-circle"></i> Clear
+                <i class="bi bi-x-circle-fill"></i> Clear
               </button>
             </div>
           </form>
@@ -97,7 +97,7 @@ const Email = {
         <div class="card-body">
           <div id="emailLog">
             <div class="empty-state">
-              <i class="bi bi-inbox"></i>
+              <i class="bi bi-inbox-fill"></i>
               <p>No emails sent this session. Emails are not stored permanently for privacy.</p>
             </div>
           </div>

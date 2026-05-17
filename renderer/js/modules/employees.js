@@ -105,7 +105,7 @@ const Employees = {
         <td>
           <div style="display:flex;gap:4px">
             <button class="btn btn-sm btn-outline" onclick="Employees.showViewModal(${emp.id})" title="View">
-              <i class="bi bi-eye"></i>
+              <i class="bi bi-eye-fill"></i>
             </button>
             <button class="btn btn-sm btn-outline" onclick="Employees.showEditModal(${emp.id})" title="Edit">
               <i class="bi bi-pencil-square"></i>

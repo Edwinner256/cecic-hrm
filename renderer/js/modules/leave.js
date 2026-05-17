@@ -22,7 +22,7 @@ const Leave = {
         </div>
         <div class="toolbar-right">
           <button class="btn btn-primary" onclick="Leave.showApplyModal()">
-            <i class="bi bi-calendar-plus"></i> Apply Leave
+            <i class="bi bi-calendar-plus-fill"></i> Apply Leave
           </button>
         </div>
       </div>
@@ -43,14 +43,14 @@ const Leave = {
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+          <div class="stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
           <div class="stat-info">
             <h3>${records.filter(l => l.status === 'rejected').length}</h3>
             <p>Rejected</p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon green"><i class="bi bi-person"></i></div>
+          <div class="stat-icon green"><i class="bi bi-person-fill"></i></div>
           <div class="stat-info">
             <h3>${employees.length}</h3>
             <p>Eligible Staff</p>
@@ -61,9 +61,9 @@ const Leave = {
       <!-- Leave Balance Overview -->
       <div class="card mb-16">
         <div class="card-header">
-          <h3>Leave Balances by Staff</h3>
+          <h3>Leave Balances by Staff (22-day shared pool)</h3>
           <button class="btn btn-sm btn-outline" onclick="Leave.toggleCalendar()">
-            <i class="bi bi-calendar3"></i> Toggle Calendar View
+            <i class="bi bi-calendar3-fill"></i> Toggle Calendar View
           </button>
         </div>
         <div class="card-body" id="leaveBalanceContainer">
@@ -179,6 +179,17 @@ const Leave = {
         return;
       }
 
+      // Short display labels for each leave type
+      const SHORT_LABELS = {
+        annual: 'Annual',
+        sick: 'Sick',
+        personal: 'Personal',
+        maternity: 'Maternity',
+        paternity: 'Paternity',
+        study: 'Study',
+        compassionate: 'Compass.'
+      };
+
       container.innerHTML = `
         <div style="overflow-x:auto">
           <table>
@@ -186,18 +197,16 @@ const Leave = {
               <tr>
                 <th>Staff</th>
                 <th>Department</th>
-                ${Object.keys(DB.LEAVE_ALLOCATIONS).map(type =>
-                  `<th style="text-align:center" title="${DB.LEAVE_ALLOCATIONS[type].label}">${Utils.escapeHtml(type.charAt(0).toUpperCase() + type.slice(1, 5))}</th>`
-                ).join('')}
-                <th style="text-align:center">Used</th>
-                <th style="text-align:center">Remaining</th>
+                ${Object.keys(DB.LEAVE_ALLOCATIONS).map(type => {
+                  const label = SHORT_LABELS[type] || type;
+                  return `<th style="text-align:center" title="${Utils.escapeHtml(DB.LEAVE_ALLOCATIONS[type].label)} (days taken)">${Utils.escapeHtml(label)}</th>`;
+                }).join('')}
+                <th style="text-align:center">Total Used</th>
+                <th style="text-align:center">Remaining (22)</th>
               </tr>
             </thead>
             <tbody id="leaveCalendarBody">
               ${allBalances.map(emp => {
-                const totalRemaining = Object.values(emp.balances).reduce((s, b) => s + b.remaining, 0);
-                const totalTaken = Object.values(emp.balances).reduce((s, b) => s + b.taken, 0);
-
                 let photoHtml = '';
                 if (emp.photo) {
                   photoHtml = `<img class="photo-thumb" src="${Utils.escapeHtml(emp.photo)}" alt="" style="width:28px;height:28px" />`;
@@ -215,21 +224,18 @@ const Leave = {
                   <td>${Utils.escapeHtml(emp.department)}</td>
                   ${Object.keys(DB.LEAVE_ALLOCATIONS).map(type => {
                     const b = emp.balances[type];
-                    const remaining = b ? b.remaining : 0;
-                    const color = remaining === 0 ? 'var(--danger)' : remaining <= 2 ? 'var(--warning)' : 'var(--success)';
-                    return `<td style="text-align:center;font-weight:600;color:${color}">${remaining}</td>`;
+                    const taken = b ? b.taken : 0;
+                    return `<td style="text-align:center;${taken > 0 ? 'font-weight:600;color:var(--warning)' : 'color:var(--text-muted)'}">${taken}</td>`;
                   }).join('')}
-                  <td style="text-align:center">${totalTaken}</td>
-                  <td style="text-align:center;font-weight:700;color:${totalRemaining === 0 ? 'var(--danger)' : totalRemaining <= 5 ? 'var(--warning)' : 'var(--success)'}">${totalRemaining}</td>
+                  <td style="text-align:center;font-weight:600">${emp.totalTaken}</td>
+                  <td style="text-align:center;font-weight:700;color:${emp.totalRemaining === 0 ? 'var(--danger)' : emp.totalRemaining <= 5 ? 'var(--warning)' : 'var(--success)'}">${emp.totalRemaining}</td>
                 </tr>`;
               }).join('')}
             </tbody>
           </table>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);display:flex;gap:16px;flex-wrap:wrap">
-          ${Object.entries(DB.LEAVE_ALLOCATIONS).map(([type, config]) =>
-            `<span><strong>${Utils.escapeHtml(config.label)}</strong>: ${config.days} days/year</span>`
-          ).join('')}
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">
+          Total leave pool: <strong>${DB.TOTAL_LEAVE_DAYS} working days</strong> shared across all leave types (Annual, Sick, Personal, Maternity, Paternity, Study, Compassionate)
         </div>
       `;
     } catch (err) {
@@ -273,13 +279,13 @@ const Leave = {
         {
           name: 'leaveType', label: 'Leave Type', type: 'select', required: true,
           options: [
-            { value: 'annual', label: 'Annual Leave (30 days/year)' },
-            { value: 'sick', label: 'Sick Leave (15 days/year)' },
-            { value: 'personal', label: 'Personal Leave (5 days/year)' },
-            { value: 'maternity', label: 'Maternity Leave (90 days/year)' },
-            { value: 'paternity', label: 'Paternity Leave (10 days/year)' },
-            { value: 'study', label: 'Study Leave (30 days/year)' },
-            { value: 'compassionate', label: 'Compassionate Leave (5 days/year)' }
+            { value: 'annual', label: 'Annual Leave (22-day shared pool)' },
+            { value: 'sick', label: 'Sick Leave (22-day shared pool)' },
+            { value: 'personal', label: 'Personal Leave (22-day shared pool)' },
+            { value: 'maternity', label: 'Maternity Leave (22-day shared pool)' },
+            { value: 'paternity', label: 'Paternity Leave (22-day shared pool)' },
+            { value: 'study', label: 'Study Leave (22-day shared pool)' },
+            { value: 'compassionate', label: 'Compassionate Leave (22-day shared pool)' }
           ]
         },
         { name: 'startDate', label: 'Start Date', type: 'date', required: true },
@@ -294,15 +300,25 @@ const Leave = {
         if (!emp) { Utils.toast('Please select an employee', 'error'); return; }
 
         data.employeeName = `${emp.firstName} ${emp.lastName}`;
-        data.days = Utils.daysBetween(data.startDate, data.endDate);
+        // Calculate working days (excludes weekends and Uganda public holidays)
+        const holidays = Utils.getUgandaHolidays(new Date().getFullYear());
+        data.days = Utils.calculateWorkingDays(data.startDate, data.endDate, holidays);
+        if (data.days === 0) {
+          const confirmed = await Utils.confirm(
+            'The selected dates contain no working days (weekends/holidays). Submit anyway?',
+            'No Working Days'
+          );
+          if (!confirmed) return;
+          data.days = Utils.daysBetween(data.startDate, data.endDate); // fallback to calendar days
+        }
         data.status = 'pending';
 
-        // Check remaining leave balance
+        // Check remaining leave balance (shared 22-day pool)
         const balances = await DB.getEmployeeLeaveBalances(data.employeeId);
-        const balance = balances[data.leaveType];
-        if (balance && data.days > balance.remaining) {
+        const totalBalance = balances.total;
+        if (totalBalance && data.days > totalBalance.remaining) {
           const confirm = await Utils.confirm(
-            `${emp.firstName} ${emp.lastName} only has ${balance.remaining} ${balance.label} days remaining but you're requesting ${data.days} days. Submit anyway?`,
+            `${emp.firstName} ${emp.lastName} only has ${totalBalance.remaining} total leave days remaining (shared pool of ${DB.TOTAL_LEAVE_DAYS}) but you're requesting ${data.days} days. Submit anyway?`,
             'Insufficient Balance'
           );
           if (!confirm) return;
@@ -310,8 +326,8 @@ const Leave = {
 
         try {
           await DB.addLeave(data);
-          const remainingMsg = balance ? ` (${Math.max(0, balance.remaining - data.days)} days remaining after this)` : '';
-          Utils.toast(`${balance.label} applied for ${data.employeeName}${remainingMsg}`, 'success');
+          const remainingAfter = Math.max(0, totalBalance.remaining - data.days);
+          Utils.toast(`Leave applied for ${data.employeeName} (${remainingAfter} days remaining from ${DB.TOTAL_LEAVE_DAYS})`, 'success');
           close();
           this.render();
         } catch (err) {
@@ -339,14 +355,14 @@ const Leave = {
           return;
         }
         const balances = await DB.getEmployeeLeaveBalances(empId);
-        const b = balances[leaveType];
-        if (b) {
-          const pct = b.allocation > 0 ? Math.round((b.remaining / b.allocation) * 100) : 0;
-          const color = b.remaining === 0 ? 'var(--danger)' : b.remaining <= 2 ? 'var(--warning)' : 'var(--success)';
+        const total = balances.total;
+        if (total) {
+          const pct = Math.round((total.remaining / total.allocation) * 100);
+          const color = total.remaining === 0 ? 'var(--danger)' : total.remaining <= 2 ? 'var(--warning)' : 'var(--success)';
           balanceInfo.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <span><strong>${Utils.escapeHtml(b.label)} Balance:</strong></span>
-              <span style="font-weight:700;color:${color}">${b.remaining} of ${b.allocation} days remaining</span>
+              <span><strong>Total Leave Balance (Shared Pool):</strong></span>
+              <span style="font-weight:700;color:${color}">${total.remaining} of ${total.allocation} days remaining</span>
             </div>
             <div style="margin-top:6px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
               <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 0.3s"></div>

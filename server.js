@@ -18,7 +18,13 @@ const os = require('os');
 const { execSync } = require('child_process');
 
 // ─── Configuration ──────────────────────────────────────────────
-const PORT = parseInt(process.env.PORT || process.argv.find(a => a.startsWith('--port='))?.split('=')[1] || '3000', 10);
+// Support both --port=3000 and --port 3000 syntax
+let portArg = process.argv.find(a => a.startsWith('--port='));
+if (!portArg) {
+  const idx = process.argv.indexOf('--port');
+  if (idx !== -1 && idx + 1 < process.argv.length) portArg = `--port=${process.argv[idx + 1]}`;
+}
+const PORT = parseInt(process.env.PORT || portArg?.split('=')[1] || '3000', 10);
 const SHOULD_OPEN = process.argv.includes('--open') || process.argv.includes('-o');
 
 const app = express();
@@ -128,21 +134,22 @@ app.use((req, res, next) => {
 });
 
 // ─── Start Server ───────────────────────────────────────────────
-const server = http.createServer(app);
 
 // Try to listen on the requested port, fallback to a random port if busy
 function startServer(port) {
   return new Promise((resolve, reject) => {
-    server.listen(port, () => {
-      resolve(server.address().port);
-    });
-    server.on('error', (err) => {
+    const server = http.createServer(app);
+    server.once('error', (err) => {
       if (err.code === 'EADDRINUSE') {
         console.log(`⚠️  Port ${port} is busy, trying ${port + 1}...`);
+        server.close();
         startServer(port + 1).then(resolve).catch(reject);
       } else {
         reject(err);
       }
+    });
+    server.listen(port, () => {
+      resolve(server.address().port);
     });
   });
 }

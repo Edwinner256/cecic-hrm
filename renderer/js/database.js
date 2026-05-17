@@ -2,13 +2,15 @@
 
 const db = new Dexie('HRMS_Database');
 
-db.version(2).stores({
+db.version(3).stores({
   employees: '++id, employeeId, firstName, lastName, email, department, position, status, employmentDate',
   leave: '++id, employeeId, leaveType, status, startDate, endDate, appliedDate',
   payroll: '++id, employeeId, month, year, status, paidDate',
   expenses: '++id, officerName, department, category, status, date',
   settings: '++id, key',
-  departments: '++id, name'
+  departments: '++id, name',
+  pettyCash: '++id, date, type, category, status, createdBy',
+  officeForms: '++id, formType, formNumber, title, createdDate, status'
 });
 
 // ─── Default Data Seeds ─────────────────────────────────────────
@@ -144,11 +146,12 @@ async function seedDemoData() {
   ]);
 
   // ── Leave Records (12) ─────────────────────────────────────
+  // Day counts are working days (Mon-Fri, excluding Uganda public holidays)
   await db.leave.bulkAdd([
     {
       employeeId: 'EMP-001', employeeName: 'John Ssebunya',
       leaveType: 'annual', days: 5,
-      startDate: '2026-03-10', endDate: '2026-03-14',
+      startDate: '2026-03-10', endDate: '2026-03-16',
       reason: 'Family visit to Jinja',
       status: 'approved', appliedDate: '2026-02-15', approvedBy: 'HR Admin'
     },
@@ -168,7 +171,7 @@ async function seedDemoData() {
     },
     {
       employeeId: 'EMP-004', employeeName: 'Grace Achieng',
-      leaveType: 'annual', days: 10,
+      leaveType: 'annual', days: 8,
       startDate: '2026-06-01', endDate: '2026-06-10',
       reason: 'Annual leave - family trip to Mombasa',
       status: 'approved', appliedDate: '2026-04-20', approvedBy: 'HR Admin'
@@ -182,7 +185,7 @@ async function seedDemoData() {
     },
     {
       employeeId: 'EMP-006', employeeName: 'Sarah Nabatanzi',
-      leaveType: 'annual', days: 15,
+      leaveType: 'annual', days: 11,
       startDate: '2026-07-01', endDate: '2026-07-15',
       reason: 'Annual leave - travel to UK',
       status: 'approved', appliedDate: '2026-05-10', approvedBy: 'HR Admin'
@@ -190,28 +193,28 @@ async function seedDemoData() {
     {
       employeeId: 'EMP-006', employeeName: 'Sarah Nabatanzi',
       leaveType: 'compassionate', days: 3,
-      startDate: '2026-03-20', endDate: '2026-03-22',
+      startDate: '2026-03-20', endDate: '2026-03-24',
       reason: 'Family bereavement',
       status: 'approved', appliedDate: '2026-03-19', approvedBy: 'HR Admin'
     },
     {
       employeeId: 'EMP-009', employeeName: 'Michael Wasswa',
       leaveType: 'study', days: 5,
-      startDate: '2026-05-15', endDate: '2026-05-19',
+      startDate: '2026-05-15', endDate: '2026-05-21',
       reason: 'Legal seminar at Law Development Centre',
       status: 'pending', appliedDate: '2026-04-20', approvedBy: ''
     },
     {
       employeeId: 'EMP-010', employeeName: 'Esther Nambi',
       leaveType: 'personal', days: 2,
-      startDate: '2026-05-22', endDate: '2026-05-23',
+      startDate: '2026-05-22', endDate: '2026-05-25',
       reason: 'Personal matters',
       status: 'pending', appliedDate: '2026-05-14', approvedBy: ''
     },
     {
       employeeId: 'EMP-007', employeeName: 'Robert Mugisha',
-      leaveType: 'annual', days: 7,
-      startDate: '2026-08-01', endDate: '2026-08-07',
+      leaveType: 'annual', days: 5,
+      startDate: '2026-08-03', endDate: '2026-08-07',
       reason: 'Annual leave - visiting family in Gulu',
       status: 'approved', appliedDate: '2026-06-01', approvedBy: 'HR Admin'
     },
@@ -364,7 +367,7 @@ async function seedDemoData() {
 
   // ── Settings ───────────────────────────────────────────────
   await db.settings.bulkAdd([
-    { key: 'companyName', value: 'Offline HRMS (U) Ltd' },
+    { key: 'companyName', value: 'CECIC' },
     { key: 'companyEmail', value: 'hr@company.co.ug' },
     { key: 'companyPhone', value: '+256 700 123 456' },
     { key: 'companyAddress', value: 'P.O. Box 12345, Kampala, Uganda' },
@@ -587,43 +590,77 @@ const DB = {
   },
 
   // ── Leave Balances ─────────────────────────────────────────
-  // Default annual leave allocations per leave type
+  // TOTAL leave entitlement is 22 working days per year shared across ALL leave types.
+  // Days are calculated as working days (Mon-Fri, excluding Uganda public holidays).
+  TOTAL_LEAVE_DAYS: 22,
+
   LEAVE_ALLOCATIONS: {
-    annual: { label: 'Annual Leave', days: 30 },
-    sick: { label: 'Sick Leave', days: 15 },
-    personal: { label: 'Personal Leave', days: 5 },
-    maternity: { label: 'Maternity Leave', days: 90 },
-    paternity: { label: 'Paternity Leave', days: 10 },
-    study: { label: 'Study Leave', days: 30 },
-    compassionate: { label: 'Compassionate Leave', days: 5 }
+    annual: { label: 'Annual Leave', days: 22 },
+    sick: { label: 'Sick Leave', days: 22 },
+    personal: { label: 'Personal Leave', days: 22 },
+    maternity: { label: 'Maternity Leave', days: 22 },
+    paternity: { label: 'Paternity Leave', days: 22 },
+    study: { label: 'Study Leave', days: 22 },
+    compassionate: { label: 'Compassionate Leave', days: 22 }
+  },
+
+  /**
+   * Get total used leave days for an employee across ALL approved leave types
+   */
+  async getTotalLeaveDaysUsed(employeeId) {
+    const records = await db.leave.where('employeeId').equals(employeeId).toArray();
+    const approved = records.filter(r => r.status === 'approved');
+    let totalUsed = 0;
+    approved.forEach(r => {
+      totalUsed += (r.days || Utils.daysBetween(r.startDate, r.endDate));
+    });
+    return totalUsed;
   },
 
   /**
    * Get leave balances for a specific employee
+   * Uses a SINGLE combined pool of 22 working days for ALL leave types.
    */
   async getEmployeeLeaveBalances(employeeId) {
-    const allocations = DB.LEAVE_ALLOCATIONS;
+    const totalAllowance = DB.TOTAL_LEAVE_DAYS;
     const records = await db.leave.where('employeeId').equals(employeeId).toArray();
     const approved = records.filter(r => r.status === 'approved');
 
     // Calculate used days per leave type
-    const used = {};
+    const usedByType = {};
+    let totalUsed = 0;
     approved.forEach(r => {
       const days = r.days || Utils.daysBetween(r.startDate, r.endDate);
-      used[r.leaveType] = (used[r.leaveType] || 0) + days;
+      usedByType[r.leaveType] = (usedByType[r.leaveType] || 0) + days;
+      totalUsed += days;
     });
 
+    const totalRemaining = Math.max(0, totalAllowance - totalUsed);
+
+    // Return balances with per-type breakdown PLUS total
+    // All leave types share a SINGLE 22-day pool — per-type "remaining" shows global remaining
     const balances = {};
-    for (const [type, config] of Object.entries(allocations)) {
-      const taken = used[type] || 0;
+    for (const [type, config] of Object.entries(DB.LEAVE_ALLOCATIONS)) {
+      const taken = usedByType[type] || 0;
       balances[type] = {
         type,
         label: config.label,
         allocation: config.days,
         taken,
-        remaining: Math.max(0, config.days - taken)
+        // Shared pool: each type shows the GLOBAL remaining days
+        remaining: totalRemaining
       };
     }
+
+    // Add a "total" pseudo-type showing the combined pool
+    balances.total = {
+      type: 'total',
+      label: 'Total Leave (All Types)',
+      allocation: totalAllowance,
+      taken: totalUsed,
+      remaining: totalRemaining
+    };
+
     return balances;
   },
 
@@ -637,10 +674,10 @@ const DB = {
     for (const emp of employees) {
       const balances = await DB.getEmployeeLeaveBalances(emp.employeeId);
       const fullName = `${emp.firstName} ${emp.lastName}`;
-      // Calculate total remaining across all leave types
-      const totalRemaining = Object.values(balances).reduce((sum, b) => sum + b.remaining, 0);
-      const totalAllocation = Object.values(balances).reduce((sum, b) => sum + b.allocation, 0);
-      const totalTaken = Object.values(balances).reduce((sum, b) => sum + b.taken, 0);
+
+      // Use the TOTAL pseudo-type for combined stats
+      const totalInfo = balances.total || { allocation: 0, taken: 0, remaining: 0 };
+      const totalRemaining = totalInfo.remaining;
 
       allBalances.push({
         employeeId: emp.employeeId,
@@ -650,12 +687,79 @@ const DB = {
         photo: emp.photo,
         department: emp.department,
         balances,
-        totalRemaining,
-        totalAllocation,
-        totalTaken
+        totalRemaining: totalInfo.remaining,
+        totalAllocation: totalInfo.allocation,
+        totalTaken: totalInfo.taken
       });
     }
     return allBalances;
+  },
+
+  // ── Petty Cash ──────────────────────────────────────────────
+  async getPettyCash() {
+    return await db.pettyCash.orderBy('date').reverse().toArray();
+  },
+
+  async addPettyCash(data) {
+    return await db.pettyCash.add(data);
+  },
+
+  async updatePettyCash(id, data) {
+    return await db.pettyCash.update(typeof id === 'string' ? parseInt(id, 10) : id, data);
+  },
+
+  async deletePettyCash(id) {
+    return await db.pettyCash.delete(typeof id === 'string' ? parseInt(id, 10) : id);
+  },
+
+  /**
+   * Get the current petty cash balance
+   */
+  async getPettyCashBalance() {
+    const records = await db.pettyCash.toArray();
+    let balance = 0;
+    records.forEach(r => {
+      if (r.type === 'opening' || r.type === 'replenishment') {
+        balance += Number(r.amount);
+      } else if (r.type === 'withdrawal' || r.type === 'expense') {
+        balance -= Number(r.amount);
+      }
+    });
+    return balance;
+  },
+
+  /**
+   * Get petty cash transactions within a date range
+   */
+  async getPettyCashByDateRange(startDate, endDate) {
+    const all = await db.pettyCash.orderBy('date').toArray();
+    return all.filter(r => r.date >= startDate && r.date <= endDate);
+  },
+
+  // ── Office Forms ────────────────────────────────────────────
+  async getOfficeForms() {
+    return await db.officeForms.orderBy('createdDate').reverse().toArray();
+  },
+
+  async getOfficeFormsByType(formType) {
+    return await db.officeForms.where('formType').equals(formType).reverse().toArray();
+  },
+
+  async addOfficeForm(data) {
+    return await db.officeForms.add(data);
+  },
+
+  async updateOfficeForm(id, data) {
+    return await db.officeForms.update(typeof id === 'string' ? parseInt(id, 10) : id, data);
+  },
+
+  async deleteOfficeForm(id) {
+    return await db.officeForms.delete(typeof id === 'string' ? parseInt(id, 10) : id);
+  },
+
+  async getOfficeForm(id) {
+    const key = typeof id === 'string' ? parseInt(id, 10) : id;
+    return await db.officeForms.get(key);
   },
 
   // ── Dashboard Stats ─────────────────────────────────────────

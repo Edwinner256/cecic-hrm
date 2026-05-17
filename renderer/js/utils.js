@@ -34,13 +34,116 @@ const Utils = {
   },
 
   /**
-   * Calculate number of days between two dates
+   * Calculate number of days between two dates (calendar days)
    */
   daysBetween(start, end) {
     const s = new Date(start);
     const e = new Date(end);
     const diff = e.getTime() - s.getTime();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1);
+  },
+
+  /**
+   * Calculate working days between two dates (Mon-Fri, excludes weekends)
+   * Optionally excludes holidays if an array of holiday Date strings (YYYY-MM-DD) is provided.
+   * This is the standard for leave calculation: 22 working days per year.
+   */
+  calculateWorkingDays(start, end, holidays = []) {
+    const s = new Date(start);
+    const e = new Date(end);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0;
+
+    let count = 0;
+    const current = new Date(s);
+
+    // Normalize holidays to YYYY-MM-DD strings for fast lookup
+    const holidaySet = new Set();
+    holidays.forEach(h => {
+      if (h) {
+        const d = new Date(h);
+        if (!isNaN(d.getTime())) holidaySet.add(d.toISOString().split('T')[0]);
+      }
+    });
+
+    while (current <= e) {
+      const dayOfWeek = current.getDay(); // 0=Sun, 6=Sat
+      const dateStr = current.toISOString().split('T')[0];
+
+      // Count if weekday AND not a holiday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidaySet.has(dateStr)) {
+        count++;
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    return count;
+  },
+
+  /**
+   * Get standard Uganda public holidays for a given year
+   */
+  getUgandaHolidays(year) {
+    // Fixed holidays
+    const fixed = [
+      `${year}-01-01`,  // New Year's Day
+      `${year}-01-26`,  // NRM Liberation Day
+      `${year}-02-16`,  // Archbishop Janani Luwum Day
+      `${year}-03-08`,  // International Women's Day
+      `${year}-05-01`,  // Labour Day
+      `${year}-06-03`,  // Martyrs' Day
+      `${year}-06-09`,  // National Heroes Day
+      `${year}-10-09`,  // Independence Day
+      `${year}-12-25`,  // Christmas Day
+      `${year}-12-26`,  // Boxing Day
+    ];
+
+    // Easter (approximate — these vary; we include common reference)
+    const easterSunday = this.getEasterDate(year);
+    if (easterSunday) {
+      const goodFriday = new Date(easterSunday);
+      goodFriday.setDate(goodFriday.getDate() - 2);
+      const easterMonday = new Date(easterSunday);
+      easterMonday.setDate(easterMonday.getDate() + 1);
+      fixed.push(goodFriday.toISOString().split('T')[0]);
+      fixed.push(easterMonday.toISOString().split('T')[0]);
+    }
+
+    // Eid dates are lunar and vary; we skip them unless manually added
+    return fixed;
+  },
+
+  /**
+   * Calculate Easter date using the Anonymous Gregorian algorithm
+   */
+  getEasterDate(year) {
+    if (year < 1583) return null;
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+  },
+
+  /**
+   * Get the annual leave entitlement (22 working days per year of service)
+   */
+  getAnnualLeaveEntitlement(yearsOfService = 0) {
+    // Standard: 22 working days per year
+    // Staff with > 5 years get an additional 2 days
+    const base = 22;
+    const bonus = yearsOfService >= 5 ? 2 : 0;
+    return base + bonus;
   },
 
   /**
@@ -356,7 +459,7 @@ const Utils = {
   renderSeniorityBadge(employmentDate) {
     const years = this.getYearsOfService(employmentDate);
     const info = this.getSeniorityInfo(years);
-    return `<span class="seniority-badge ${info.class}"><i class="bi bi-clock-history"></i> ${info.label}</span>`;
+    return `<span class="seniority-badge ${info.class}"><i class="bi bi-clock-fill"></i> ${info.label}</span>`;
   },
 
   /**
@@ -424,5 +527,90 @@ const Utils = {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
+
+  /**
+   * Convert a number to words (Uganda Shillings format)
+   * e.g. 9500000 → "Nine Million Five Hundred Thousand"
+   */
+  numberToWords(num) {
+    const ones = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    if (num === 0) return 'Zero';
+
+    const numToWords = (n) => {
+      if (n < 20) return ones[n];
+      if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+      if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + numToWords(n % 100) : '');
+      if (n < 1000000) return numToWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 !== 0 ? ' ' + numToWords(n % 1000) : '');
+      if (n < 1000000000) return numToWords(Math.floor(n / 1000000)) + ' Million' + (n % 1000000 !== 0 ? ' ' + numToWords(n % 1000000) : '');
+      return numToWords(Math.floor(n / 1000000000)) + ' Billion' + (n % 1000000000 !== 0 ? ' ' + numToWords(n % 1000000000) : '');
+    };
+
+    // Round to nearest integer for simplicity
+    const wholeNum = Math.round(Math.abs(num));
+    return numToWords(wholeNum);
+  },
+
+  /**
+   * Safely print HTML content — opens a new window and triggers print.
+   * Handles popup blockers gracefully by showing a fallback iframe print.
+   * Returns true if print window opened successfully, false otherwise.
+   */
+  printHTML(html, title = 'Print') {
+    // Try Electron IPC first
+    if (window.electronAPI && typeof window.electronAPI.printContent === 'function') {
+      window.electronAPI.printContent(html).then(result => {
+        if (!result || !result.success) {
+          console.warn('Electron print failed, falling back to browser print');
+        }
+      }).catch(() => {});
+      return true;
+    }
+
+    // Try opening a new window (may be blocked by popup blocker)
+    let printWin = null;
+    try {
+      printWin = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+    } catch (e) {
+      // Popup blocker active
+    }
+
+    if (!printWin || printWin.closed || typeof printWin.document === 'undefined') {
+      // Popup was blocked — use an iframe fallback
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none';
+      document.body.appendChild(iframe);
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+      // Delay print to allow CSS/images to load
+      setTimeout(() => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (e) {
+          Utils.toast('Please allow popups for this site to enable printing, or use Ctrl+P', 'warning', 6000);
+        }
+        // Remove iframe after print dialog closes (approximate)
+        setTimeout(() => {
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        }, 1000);
+      }, 500);
+      return false;
+    }
+
+    // Window opened successfully
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    printWin.focus();
+    setTimeout(() => {
+      try { printWin.print(); } catch (e) { /* user may print manually */ }
+    }, 500);
+    return true;
   }
 };

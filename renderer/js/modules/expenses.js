@@ -41,7 +41,7 @@ const Expenses = {
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+          <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
           <div class="stat-info">
             <h3>${Utils.formatCurrency(approvedTotal)}</h3>
             <p>Approved Total</p>
@@ -55,7 +55,7 @@ const Expenses = {
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+          <div class="stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
           <div class="stat-info">
             <h3>${Utils.formatCurrency(rejectedTotal)}</h3>
             <p>Rejected Total</p>
@@ -118,7 +118,7 @@ const Expenses = {
         <td><span class="badge ${badgeClass}">${r.status}</span></td>
         <td>
           <div style="display:flex;gap:4px">
-            <button class="btn btn-sm btn-outline" onclick="Expenses.showViewModal(${r.id})" title="View"><i class="bi bi-eye"></i></button>
+            <button class="btn btn-sm btn-outline" onclick="Expenses.showViewModal(${r.id})" title="View"><i class="bi bi-eye-fill"></i></button>
             ${r.status === 'pending' ? `
               <button class="btn btn-sm btn-success" onclick="Expenses.approve(${r.id})" title="Approve"><i class="bi bi-check-circle-fill"></i></button>
               <button class="btn btn-sm btn-danger" onclick="Expenses.reject(${r.id})" title="Reject"><i class="bi bi-x-circle-fill"></i></button>
@@ -192,7 +192,8 @@ const Expenses = {
   },
 
   async showViewModal(id) {
-    const exp = await db.expenses.get(id);
+    const key = typeof id === 'string' ? parseInt(id, 10) : id;
+    const exp = await db.expenses.get(key);
     if (!exp) { Utils.toast('Expense not found', 'error'); return; }
 
     const content = `

@@ -94,18 +94,7 @@ const Reports = {
       return;
     }
 
-    if (window.electronAPI) {
-      window.electronAPI.printContent(this.currentHtml)
-        .then(result => {
-          if (!result.success) Utils.toast('Print failed: ' + result.error, 'error');
-        });
-    } else {
-      const printWin = window.open('', '_blank');
-      printWin.document.write(this.currentHtml);
-      printWin.document.close();
-      printWin.focus();
-      printWin.print();
-    }
+    Utils.printHTML(this.currentHtml, 'HR Report');
   },
 
   async exportReport() {
