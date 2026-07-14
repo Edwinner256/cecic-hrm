@@ -117,15 +117,66 @@ const App = {
   },
 
   logout() {
-    const confirmed = window.confirm('Are you sure you want to sign out?');
-    if (!confirmed) return;
-    sessionStorage.removeItem('hrms_logged_in');
-    sessionStorage.removeItem('hrms_user');
-    sessionStorage.removeItem('hrms_role');
-    sessionStorage.removeItem('hrms_displayName');
-    sessionStorage.removeItem('hrms_employeeId');
-    this.showLogin();
-    Utils.toast('Signed out successfully', 'info');
+    const displayName = sessionStorage.getItem('hrms_displayName') || sessionStorage.getItem('hrms_user') || 'User';
+
+    // Remove any existing confirm modal
+    const existing = document.getElementById('logoutConfirmOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'logoutConfirmOverlay';
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal modal-sm logout-confirm-card">
+        <div class="modal-body" style="text-align:center;padding:40px 32px 32px">
+          <div class="logout-avatar">
+            <i class="bi bi-person-circle"></i>
+          </div>
+          <h3 class="logout-greeting">${Utils.escapeHtml(displayName)}</h3>
+          <p class="logout-question">Are you sure you want to sign out?</p>
+          <div class="logout-btn-group">
+            <button class="btn btn-outline logout-btn-cancel" data-cancel>
+              <i class="bi bi-x-lg"></i> Cancel
+            </button>
+            <button class="btn btn-danger logout-btn-confirm" id="logoutConfirmBtn">
+              <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('modalContainer').appendChild(overlay);
+
+    const close = () => {
+      overlay.remove();
+    };
+
+    // Cancel on clicking Cancel, X, or backdrop
+    overlay.querySelector('[data-cancel]').addEventListener('click', close);
+    overlay.querySelector('.modal-close')?.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    // Confirm sign out
+    overlay.querySelector('#logoutConfirmBtn').addEventListener('click', () => {
+      close();
+      // Small delay for smooth animation, then sign out
+      setTimeout(() => {
+        sessionStorage.removeItem('hrms_logged_in');
+        sessionStorage.removeItem('hrms_user');
+        sessionStorage.removeItem('hrms_role');
+        sessionStorage.removeItem('hrms_displayName');
+        sessionStorage.removeItem('hrms_employeeId');
+        this.showLogin();
+        Utils.toast('Signed out successfully', 'info');
+      }, 150);
+    });
+
+    // ESC key to close
+    const escHandler = (e) => {
+      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
   },
 
   /**

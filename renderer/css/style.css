@@ -135,6 +135,76 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   text-align: center;
 }
 
+/* ─── Logout Confirmation Card ─────────────────────────────── */
+.logout-confirm-card {
+  animation: fadeInScale 0.2s ease-out;
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.logout-avatar {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, var(--primary), #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(22, 101, 52, 0.3);
+}
+.logout-avatar i {
+  font-size: 36px;
+  color: #fff;
+}
+.logout-greeting {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+.logout-question {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin: 0 0 28px;
+}
+.logout-btn-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.logout-btn-cancel,
+.logout-btn-confirm {
+  min-width: 130px;
+  padding: 10px 24px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+.logout-btn-cancel {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.logout-btn-cancel:hover {
+  background: #e2e8f0;
+}
+.logout-btn-confirm {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+.logout-btn-confirm:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+}
+.logout-btn-confirm i {
+  margin-right: 6px;
+}
+
 .sidebar-user-info {
   display: flex;
   align-items: center;
