@@ -2,15 +2,16 @@
 
 const db = new Dexie('HRMS_Database');
 
-db.version(3).stores({
-  employees: '++id, employeeId, firstName, lastName, email, department, position, status, employmentDate',
+db.version(4).stores({
+  employees: '++id, employeeId, firstName, lastName, email, department, position, status, employmentDate, role',
   leave: '++id, employeeId, leaveType, status, startDate, endDate, appliedDate',
   payroll: '++id, employeeId, month, year, status, paidDate',
   expenses: '++id, officerName, department, category, status, date',
   settings: '++id, key',
   departments: '++id, name',
   pettyCash: '++id, date, type, category, status, createdBy',
-  officeForms: '++id, formType, formNumber, title, createdDate, status'
+  officeForms: '++id, formType, formNumber, title, createdDate, status',
+  users: '++id, username, role, employeeId'
 });
 
 // ─── Default Data Seeds ─────────────────────────────────────────
@@ -36,12 +37,12 @@ async function seedDemoData() {
   // ── Employees (12) ─────────────────────────────────────────
   await db.employees.bulkAdd([
     {
-      employeeId: 'EMP-001', firstName: 'John', lastName: 'Ssebunya',
-      email: 'john.ssebunya@company.co.ug', phone: '+256 712 345 678',
-      department: 'Engineering', position: 'Senior Developer',
-      salary: 10000000, employmentDate: Utils.toDateInputValue(new Date(2020, 0, 15)),
+      employeeId: 'EMP-001', firstName: 'Edwin', lastName: 'Mumbere',
+      email: 'edwin.mumbere@company.co.ug', phone: '+256 701 234 567',
+      department: 'Administration', position: 'Executive Director',
+      salary: 15000000, employmentDate: Utils.toDateInputValue(new Date(2018, 0, 10)),
       status: 'active', photo: '',
-      address: '123 Kampala Rd', emergencyContact: '+256 722 111 222',
+      address: 'Plot 1, Kololo Hill, Kampala', emergencyContact: '+256 772 501 234',
       bankAccount: '1001234567890', bankName: 'Stanbic Bank Uganda'
     },
     {
@@ -72,8 +73,8 @@ async function seedDemoData() {
       bankAccount: '4001112223334', bankName: 'Absa Bank Uganda'
     },
     {
-      employeeId: 'EMP-005', firstName: 'David', lastName: 'Muwonge',
-      email: 'david.muwonge@company.co.ug', phone: '+256 714 789 012',
+      employeeId: 'EMP-005', firstName: 'Godwin', lastName: 'Bwambale',
+      email: 'godwin.bwambale@company.co.ug', phone: '+256 714 789 012',
       department: 'Engineering', position: 'Junior Developer',
       salary: 3500000, employmentDate: Utils.toDateInputValue(new Date(2024, 0, 5)),
       status: 'active', photo: '',
@@ -142,6 +143,24 @@ async function seedDemoData() {
       status: 'active', photo: '',
       address: '999 Mengo', emergencyContact: '+256 733 111 222',
       bankAccount: '3007778889990', bankName: 'Centenary Bank'
+    },
+    {
+      employeeId: 'EMP-013', firstName: 'Lydia', lastName: 'Biira',
+      email: 'lydia.biira@company.co.ug', phone: '+256 701 234 567',
+      department: 'Administration', position: 'Admin Officer',
+      salary: 3500000, employmentDate: Utils.toDateInputValue(new Date(2024, 5, 1)),
+      status: 'active', photo: '',
+      address: '444 Fort Portal Rd', emergencyContact: '+256 712 345 678',
+      bankAccount: '4001112233445', bankName: 'Stanbic Bank Uganda'
+    },
+    {
+      employeeId: 'EMP-014', firstName: 'Hellen', lastName: 'Masika',
+      email: 'hellen.masika@company.co.ug', phone: '+256 712 345 678',
+      department: 'Engineering', position: 'Senior Developer',
+      salary: 10000000, employmentDate: Utils.toDateInputValue(new Date(2020, 0, 15)),
+      status: 'active', photo: '',
+      address: '123 Kampala Rd', emergencyContact: '+256 722 111 222',
+      bankAccount: '6001112233445', bankName: 'Stanbic Bank Uganda'
     }
   ]);
 
@@ -149,10 +168,10 @@ async function seedDemoData() {
   // Day counts are working days (Mon-Fri, excluding Uganda public holidays)
   await db.leave.bulkAdd([
     {
-      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
+      employeeId: 'EMP-001', employeeName: 'Edwin Mumbere',
       leaveType: 'annual', days: 5,
       startDate: '2026-03-10', endDate: '2026-03-16',
-      reason: 'Family visit to Jinja',
+      reason: 'Executive retreat',
       status: 'approved', appliedDate: '2026-02-15', approvedBy: 'HR Admin'
     },
     {
@@ -177,7 +196,7 @@ async function seedDemoData() {
       status: 'approved', appliedDate: '2026-04-20', approvedBy: 'HR Admin'
     },
     {
-      employeeId: 'EMP-005', employeeName: 'David Muwonge',
+      employeeId: 'EMP-005', employeeName: 'Godwin Bwambale',
       leaveType: 'sick', days: 1,
       startDate: '2026-04-20', endDate: '2026-04-20',
       reason: 'Malaria treatment',
@@ -231,6 +250,13 @@ async function seedDemoData() {
       startDate: '2026-05-25', endDate: '2026-05-28',
       reason: 'Short break',
       status: 'pending', appliedDate: '2026-05-10', approvedBy: ''
+    },
+    {
+      employeeId: 'EMP-014', employeeName: 'Hellen Masika',
+      leaveType: 'personal', days: 2,
+      startDate: '2026-05-20', endDate: '2026-05-21',
+      reason: 'Personal appointment',
+      status: 'pending', appliedDate: '2026-05-15', approvedBy: ''
     }
   ]);
 
@@ -238,9 +264,9 @@ async function seedDemoData() {
   await db.payroll.bulkAdd([
     // March 2026
     {
-      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
-      month: 3, year: 2026, basicSalary: 10000000,
-      allowances: 1500000, deductions: 2000000, netPay: 9500000,
+      employeeId: 'EMP-001', employeeName: 'Edwin Mumbere',
+      month: 3, year: 2026, basicSalary: 15000000,
+      allowances: 2500000, deductions: 3000000, netPay: 14500000,
       status: 'paid', paidDate: '2026-03-28'
     },
     {
@@ -257,9 +283,9 @@ async function seedDemoData() {
     },
     // April 2026
     {
-      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
-      month: 4, year: 2026, basicSalary: 10000000,
-      allowances: 1500000, deductions: 2000000, netPay: 9500000,
+      employeeId: 'EMP-001', employeeName: 'Edwin Mumbere',
+      month: 4, year: 2026, basicSalary: 15000000,
+      allowances: 2500000, deductions: 3000000, netPay: 14500000,
       status: 'paid', paidDate: '2026-04-28'
     },
     {
@@ -288,9 +314,9 @@ async function seedDemoData() {
     },
     // May 2026 (current month — some still pending)
     {
-      employeeId: 'EMP-001', employeeName: 'John Ssebunya',
-      month: 5, year: 2026, basicSalary: 10000000,
-      allowances: 1500000, deductions: 2000000, netPay: 9500000,
+      employeeId: 'EMP-001', employeeName: 'Edwin Mumbere',
+      month: 5, year: 2026, basicSalary: 15000000,
+      allowances: 2500000, deductions: 3000000, netPay: 14500000,
       status: 'paid', paidDate: '2026-05-15'
     },
     {
@@ -304,7 +330,7 @@ async function seedDemoData() {
   // ── Expenses (10) ──────────────────────────────────────────
   await db.expenses.bulkAdd([
     {
-      officerName: 'John Ssebunya', department: 'Engineering',
+      officerName: 'Edwin Mumbere', department: 'Administration',
       category: 'Travel', amount: 850000,
       description: 'Client site visit — Jinja',
       date: '2026-04-10', receipt: '', status: 'approved', approvedBy: 'Finance'
@@ -365,6 +391,59 @@ async function seedDemoData() {
     }
   ]);
 
+  // ── Users (for role-based login) ──────────────────────────
+  await db.users.bulkAdd([
+    {
+      username: 'admin',
+      password: Utils.hashPassword('admin123'),
+      role: 'admin',
+      employeeId: 'EMP-001',
+      displayName: 'Edwin Mumbere'
+    },
+    {
+      username: 'finance',
+      password: Utils.hashPassword('finance123'),
+      role: 'finance',
+      employeeId: 'EMP-002',
+      displayName: 'Mary Nakato'
+    },
+    {
+      username: 'hr',
+      password: Utils.hashPassword('hr123'),
+      role: 'admin',
+      employeeId: 'EMP-003',
+      displayName: 'Peter Okello'
+    },
+    {
+      username: 'hellen',
+      password: Utils.hashPassword('hellen123'),
+      role: 'staff',
+      employeeId: 'EMP-014',
+      displayName: 'Hellen Masika'
+    },
+    {
+      username: 'godwin',
+      password: Utils.hashPassword('godwin123'),
+      role: 'staff',
+      employeeId: 'EMP-005',
+      displayName: 'Godwin Bwambale'
+    },
+    {
+      username: 'lydia',
+      password: Utils.hashPassword('lydia123'),
+      role: 'staff',
+      employeeId: 'EMP-013',
+      displayName: 'Lydia Biira'
+    },
+    {
+      username: 'edwin',
+      password: Utils.hashPassword('edwin123'),
+      role: 'staff',
+      employeeId: 'EMP-001',
+      displayName: 'Edwin Mumbere'
+    }
+  ]);
+
   // ── Settings ───────────────────────────────────────────────
   await db.settings.bulkAdd([
     { key: 'companyName', value: 'CECIC' },
@@ -386,14 +465,16 @@ async function seedDemoData() {
  */
 async function seedDefaultData() {
   const empCount = await db.employees.count();
-  if (empCount > 0) return; // Already has employee data — don't overwrite
+  const userCount = await db.users.count();
+  if (empCount > 0 && userCount > 0) return; // Already has data — don't overwrite
 
-  // Departments might exist from a partial session; clear & start fresh
+  // Tables might exist from a partial session; clear & start fresh
   await db.departments.clear();
   await db.leave.clear();
   await db.payroll.clear();
   await db.expenses.clear();
   await db.settings.clear();
+  await db.users.clear();
 
   await seedDemoData();
 }
@@ -585,6 +666,9 @@ const DB = {
     await db.expenses.clear();
     await db.settings.clear();
     await db.departments.clear();
+    await db.users.clear();
+    await db.pettyCash.clear();
+    await db.officeForms.clear();
     // Re-seed with rich demo data
     await seedDemoData();
   },
@@ -799,6 +883,82 @@ const DB = {
       pendingExpensesTotal,
       totalExpenses: expenses.reduce((sum, e) => sum + Number(e.amount), 0)
     };
+  },
+
+  // ── Users (Authentication & Role Management) ─────────────
+
+  /**
+   * Authenticate a user and return user data if valid
+   */
+  async authenticate(username, password) {
+    const user = await db.users.where('username').equals(username).first();
+    if (!user) return null;
+    if (!Utils.verifyPassword(password, user.password)) return null;
+
+    // Fetch linked employee data if available
+    let employee = null;
+    if (user.employeeId) {
+      employee = await db.employees.where('employeeId').equals(user.employeeId).first();
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      displayName: user.displayName,
+      employeeId: user.employeeId || '',
+      employee
+    };
+  },
+
+  /**
+   * Get all users (admin only)
+   */
+  async getUsers() {
+    return await db.users.toArray();
+  },
+
+  /**
+   * Add a new user
+   */
+  async addUser(data) {
+    if (!data.username || !data.password) throw new Error('Username and password required');
+    const existing = await db.users.where('username').equals(data.username).first();
+    if (existing) throw new Error('Username already exists');
+    data.password = Utils.hashPassword(data.password);
+    return await db.users.add(data);
+  },
+
+  /**
+   * Update user (preserve password if not changing)
+   */
+  async updateUser(id, data) {
+    const updateData = { ...data };
+    if (updateData.password) {
+      updateData.password = Utils.hashPassword(updateData.password);
+    } else {
+      delete updateData.password;
+    }
+    return await db.users.update(typeof id === 'string' ? parseInt(id, 10) : id, updateData);
+  },
+
+  /**
+   * Delete a user
+   */
+  async deleteUser(id) {
+    return await db.users.delete(typeof id === 'string' ? parseInt(id, 10) : id);
+  },
+
+  /**
+   * Change own password
+   */
+  async changePassword(username, oldPassword, newPassword) {
+    const user = await db.users.where('username').equals(username).first();
+    if (!user) throw new Error('User not found');
+    if (!Utils.verifyPassword(oldPassword, user.password)) throw new Error('Current password is incorrect');
+    if (!newPassword || newPassword.length < 4) throw new Error('New password must be at least 4 characters');
+    await db.users.update(user.id, { password: Utils.hashPassword(newPassword) });
+    return true;
   }
 };
 

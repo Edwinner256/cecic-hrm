@@ -5,7 +5,26 @@ const Dashboard = {
 
   async render() {
     const container = document.getElementById('page-dashboard');
-    const stats = await DB.getDashboardStats();
+    if (!container) return;
+
+    let stats;
+    try {
+      stats = await DB.getDashboardStats();
+    } catch (err) {
+      console.error('Dashboard stats error:', err);
+      container.innerHTML = `
+        <div class="empty-state" style="padding:60px 20px">
+          <i class="bi bi-database-exclamation" style="font-size:48px;color:var(--danger)"></i>
+          <h3>Could Not Load Dashboard</h3>
+          <p style="color:var(--text-muted);max-width:400px;margin:8px auto">
+            Database may still be initializing. Try refreshing the page.
+          </p>
+          <button class="btn btn-primary" onclick="App.navigate('dashboard')">
+            <i class="bi bi-arrow-repeat"></i> Retry
+          </button>
+        </div>`;
+      return;
+    }
 
     container.innerHTML = `
       <div class="stats-grid">
@@ -131,7 +150,7 @@ const Dashboard = {
       </div>
     `;
 
-    // Render department chart
+    // Render department chart (safe — handles Chart.js failures)
     this.renderDeptChart(stats.depts);
     // Render recent activity
     this.renderRecentActivity();
@@ -148,30 +167,51 @@ const Dashboard = {
     const ctx = document.getElementById('deptChart');
     if (!ctx) return;
 
-    const colors = ['#166534', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#ca8a04'];
+    // Check if Chart.js is available (works offline if already cached)
+    if (typeof Chart === 'undefined') {
+      ctx.parentElement.innerHTML = `
+        <div class="empty-state" style="padding:20px">
+          <i class="bi bi-bar-chart" style="font-size:32px;color:var(--text-muted)"></i>
+          <h4 style="margin:8px 0 4px">Chart Library Unavailable</h4>
+          <p style="color:var(--text-muted);font-size:13px">Chart.js failed to load. Connect to the internet once to cache it, or check your network.</p>
+        </div>`;
+      return;
+    }
 
-    this.chartInstances.deptChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: Object.keys(depts),
-        datasets: [{
-          data: Object.values(depts),
-          backgroundColor: colors.slice(0, Object.keys(depts).length),
-          borderWidth: 2,
-          borderColor: '#fff'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { padding: 16, usePointStyle: true, font: { size: 12 } }
+    try {
+      const colors = ['#166534', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#ca8a04'];
+
+      this.chartInstances.deptChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(depts),
+          datasets: [{
+            data: Object.values(depts),
+            backgroundColor: colors.slice(0, Object.keys(depts).length),
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { padding: 16, usePointStyle: true, font: { size: 12 } }
+            }
           }
         }
-      }
-    });
+      });
+    } catch (err) {
+      console.warn('Chart render error:', err);
+      ctx.parentElement.innerHTML = `
+        <div class="empty-state" style="padding:20px">
+          <i class="bi bi-bar-chart" style="font-size:32px;color:var(--text-muted)"></i>
+          <h4 style="margin:8px 0 4px">Chart Rendering Error</h4>
+          <p style="color:var(--text-muted);font-size:13px">Could not render chart. ${Utils.escapeHtml(err.message)}</p>
+        </div>`;
+    }
   },
 
   renderQuickStats(stats) {

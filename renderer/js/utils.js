@@ -417,6 +417,81 @@ const Utils = {
   },
 
   /**
+   * Simple password hashing for offline storage
+   * Uses btoa + salt for basic obfuscation (not cryptographically secure,
+   * but appropriate for an offline-first IndexedDB system)
+   */
+  hashPassword(password) {
+    if (!password) return '';
+    const salt = 'HRMS::2026::CECIC';
+    return btoa(salt + ':' + password + ':CECIC');
+  },
+
+  /**
+   * Verify a password against a stored hash
+   */
+  verifyPassword(password, hash) {
+    return this.hashPassword(password) === hash;
+  },
+
+  /**
+   * Get the current user's role from session storage
+   */
+  getUserRole() {
+    return sessionStorage.getItem('hrms_role') || '';
+  },
+
+  /**
+   * Get the current user's display name
+   */
+  getUserDisplayName() {
+    return sessionStorage.getItem('hrms_displayName') || 'User';
+  },
+
+  /**
+   * Get the current user's employee ID (may be empty for admin)
+   */
+  getUserEmployeeId() {
+    return sessionStorage.getItem('hrms_employeeId') || '';
+  },
+
+  /**
+   * Check if the current user has a given role or higher
+   */
+  hasRole(minimumRole) {
+    const roleHierarchy = { staff: 1, finance: 2, admin: 3 };
+    const userRole = this.getUserRole();
+    const userLevel = roleHierarchy[userRole] || 0;
+    const requiredLevel = roleHierarchy[minimumRole] || 99;
+    return userLevel >= requiredLevel;
+  },
+
+  /**
+   * Check if current user can access a specific page
+   */
+  canAccess(page) {
+    const role = Utils.getUserRole();
+
+    // Admin can access everything
+    if (role === 'admin') return true;
+
+    // Finance permissions (can't manage employees or system settings)
+    if (role === 'finance') {
+      const restricted = ['settings'];
+      return !restricted.includes(page);
+    }
+
+    // Staff permissions (very limited)
+    if (role === 'staff') {
+      const allowed = ['dashboard', 'leave', 'officeForms', 'reports'];
+      return allowed.includes(page);
+    }
+
+    // Default: no access
+    return false;
+  },
+
+  /**
    * Convert a File to a base64 data URL
    */
   fileToBase64(file) {

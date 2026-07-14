@@ -33,6 +33,10 @@
           <i class="bi bi-key"></i> Sign In
         </button>
         <div class="login-error" id="loginError"></div>
+        <div class="forgot-password-link">
+          <a href="#" onclick="App.showPasswordReset()">Forgot Password?</a>
+        </div>
+        <div id="loginHelp"></div>
       </form>
 
       <div class="login-footer-text">
@@ -53,49 +57,56 @@
       </div>
 
       <div class="sidebar-nav">
-        <a class="nav-item active" data-page="dashboard" href="#">
+        <a class="nav-item active" data-page="dashboard" data-roles="admin,finance,staff" href="#">
           <i class="bi bi-grid-1x2-fill"></i>
           <span>Dashboard</span>
         </a>
-        <a class="nav-item" data-page="employees" href="#">
+        <a class="nav-item" data-page="employees" data-roles="admin,finance" href="#">
           <i class="bi bi-people-fill"></i>
           <span>Employees</span>
         </a>
-        <a class="nav-item" data-page="leave" href="#">
+        <a class="nav-item" data-page="leave" data-roles="admin,finance,staff" href="#">
           <i class="bi bi-calendar-check-fill"></i>
           <span>Leave Management</span>
         </a>
-        <a class="nav-item" data-page="payroll" href="#">
+        <a class="nav-item" data-page="payroll" data-roles="admin,finance" href="#">
           <i class="bi bi-cash-coin"></i>
           <span>Payroll</span>
         </a>
-        <a class="nav-item" data-page="pettyCash" href="#">
+        <a class="nav-item" data-page="pettyCash" data-roles="admin,finance" href="#">
           <i class="bi bi-piggy-bank-fill"></i>
           <span>Petty Cash</span>
         </a>
-        <a class="nav-item" data-page="officeForms" href="#">
+        <a class="nav-item" data-page="officeForms" data-roles="admin,finance,staff" href="#">
           <i class="bi bi-file-earmark-text-fill"></i>
           <span>Forms & Documents</span>
         </a>
-        <a class="nav-item" data-page="expenses" href="#">
+        <a class="nav-item" data-page="expenses" data-roles="admin,finance" href="#">
           <i class="bi bi-receipt-cutoff"></i>
           <span>Officer Expenses</span>
         </a>
-        <a class="nav-item" data-page="reports" href="#">
+        <a class="nav-item" data-page="reports" data-roles="admin,finance,staff" href="#">
           <i class="bi bi-bar-chart-fill"></i>
           <span>Reports</span>
         </a>
-        <a class="nav-item" data-page="email" href="#">
+        <a class="nav-item" data-page="email" data-roles="admin" href="#">
           <i class="bi bi-envelope-at-fill"></i>
           <span>Email / Sync</span>
         </a>
-        <a class="nav-item" data-page="settings" href="#">
+        <a class="nav-item" data-page="settings" data-roles="admin" href="#">
           <i class="bi bi-gear-wide-connected"></i>
           <span>Settings</span>
         </a>
       </div>
 
       <div class="sidebar-footer">
+        <div class="sidebar-user-info" id="sidebarUserInfo" style="display:none">
+          <i class="bi bi-person-circle"></i>
+          <div class="sidebar-user-details">
+            <span class="sidebar-user-name" id="sidebarUserName">User</span>
+            <span class="sidebar-user-role" id="sidebarUserRole">staff</span>
+          </div>
+        </div>
         <div class="connection-status offline" id="connectionStatus">
           <i class="bi bi-cloud-slash-fill"></i>
           <span>Offline</span>

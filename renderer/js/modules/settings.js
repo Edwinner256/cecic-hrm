@@ -157,6 +157,21 @@ const Settings = {
         </div>
       </div>
 
+      <div class="card mb-24" id="userManagementSection">
+        <div class="card-header">
+          <h3>User Management</h3>
+          <button class="btn btn-sm btn-primary" onclick="Settings.showAddUserModal()">
+            <i class="bi bi-person-plus-fill"></i> Add User
+          </button>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-16">Manage user accounts. Each user is assigned a role that controls what they can access.</p>
+          <div id="userListContainer">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="card mb-24">
         <div class="card-header"><h3>Data Management</h3></div>
         <div class="card-body">
@@ -241,6 +256,243 @@ const Settings = {
     // Load data
     this.loadStats();
     this.renderDepartmentList();
+    this.renderUserList();
+  },
+
+  // ── User Management ───────────────────────────────────────
+
+  async renderUserList() {
+    const container = document.getElementById('userListContainer');
+    if (!container) return;
+
+    try {
+      const users = await DB.getUsers();
+      const currentUser = sessionStorage.getItem('hrms_user');
+
+      if (users.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No users configured.</p></div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+          ${users.map(u => {
+            const isSelf = u.username === currentUser;
+            const roleBadge = {
+              admin: 'style="background:#166534;color:#fff"',
+              finance: 'style="background:#ea580c;color:#fff"',
+              staff: 'style="background:#0e7490;color:#fff"'
+            }[u.role] || '';
+
+            return `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)">
+                <div style="display:flex;align-items:center;gap:12px;min-width:0">
+                  <i class="bi bi-person-circle" style="font-size:24px;color:var(--text-muted);flex-shrink:0"></i>
+                  <div style="min-width:0">
+                    <div style="font-weight:600;display:flex;align-items:center;gap:8px">
+                      ${Utils.escapeHtml(u.displayName || u.username)}
+                      ${isSelf ? '<span style="font-size:11px;color:var(--text-muted)">(you)</span>' : ''}
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+                      @${Utils.escapeHtml(u.username)}
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                  <span class="seniority-badge" ${roleBadge}>${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span>
+                  <button class="btn btn-sm btn-outline" onclick="Settings.showEditUserModal(${u.id})" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  ${!isSelf ? `<button class="btn btn-sm btn-danger" onclick="Settings.deleteUser(${u.id})" title="Delete">
+                    <i class="bi bi-trash3"></i>
+                  </button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } catch (err) {
+      console.error('Error rendering users:', err);
+      container.innerHTML = '<div class="empty-state"><p>Error loading users.</p></div>';
+    }
+  },
+
+  showAddUserModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Add User</h2>
+          <button class="modal-close" data-close>&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Username <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="newUsername" placeholder="e.g. jdoe" autofocus />
+          </div>
+          <div class="form-group">
+            <label>Password <span style="color:var(--danger)">*</span></label>
+            <input type="password" class="form-control" id="newPassword" placeholder="Minimum 4 characters" />
+          </div>
+          <div class="form-group">
+            <label>Display Name</label>
+            <input type="text" class="form-control" id="newDisplayName" placeholder="e.g. John Doe" />
+          </div>
+          <div class="form-group">
+            <label>Employee ID (optional)</label>
+            <input type="text" class="form-control" id="newEmployeeId" placeholder="e.g. EMP-001" />
+          </div>
+          <div class="form-group">
+            <label>Role <span style="color:var(--danger)">*</span></label>
+            <select class="form-control" id="newRole">
+              <option value="staff">Staff</option>
+              <option value="finance">Finance</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" data-cancel>Cancel</button>
+          <button class="btn btn-primary" id="saveUserBtn"><i class="bi bi-person-plus-fill"></i> Add User</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('modalContainer').appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.querySelector('[data-close]').addEventListener('click', close);
+    overlay.querySelector('[data-cancel]').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#saveUserBtn').addEventListener('click', async () => {
+      const username = overlay.querySelector('#newUsername').value.trim();
+      const password = overlay.querySelector('#newPassword').value;
+      const displayName = overlay.querySelector('#newDisplayName').value.trim();
+      const employeeId = overlay.querySelector('#newEmployeeId').value.trim();
+      const role = overlay.querySelector('#newRole').value;
+
+      if (!username || !password) {
+        Utils.toast('Username and password are required', 'warning');
+        return;
+      }
+
+      try {
+        await DB.addUser({ username, password, displayName, employeeId, role });
+        Utils.toast(`User "${username}" created`, 'success');
+        close();
+        this.render();
+      } catch (err) {
+        Utils.toast(err.message, 'error');
+      }
+    });
+
+    overlay.querySelector('#newUsername').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') overlay.querySelector('#saveUserBtn').click();
+    });
+  },
+
+  showEditUserModal(id) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+
+    // Load user data first
+    DB.getUsers().then(users => {
+      const user = users.find(u => u.id === id);
+      if (!user) {
+        Utils.toast('User not found', 'error');
+        return;
+      }
+
+      overlay.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Edit User</h2>
+            <button class="modal-close" data-close>&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" class="form-control" value="${Utils.escapeHtml(user.username)}" disabled style="opacity:0.6" />
+            </div>
+            <div class="form-group">
+              <label>New Password <span style="font-size:12px;color:var(--text-muted)">(leave blank to keep current)</span></label>
+              <input type="password" class="form-control" id="editPassword" placeholder="Enter new password" />
+            </div>
+            <div class="form-group">
+              <label>Display Name</label>
+              <input type="text" class="form-control" id="editDisplayName" value="${Utils.escapeHtml(user.displayName || '')}" />
+            </div>
+            <div class="form-group">
+              <label>Employee ID</label>
+              <input type="text" class="form-control" id="editEmployeeId" value="${Utils.escapeHtml(user.employeeId || '')}" />
+            </div>
+            <div class="form-group">
+              <label>Role <span style="color:var(--danger)">*</span></label>
+              <select class="form-control" id="editRole">
+                <option value="staff" ${user.role === 'staff' ? 'selected' : ''}>Staff</option>
+                <option value="finance" ${user.role === 'finance' ? 'selected' : ''}>Finance</option>
+                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" data-cancel>Cancel</button>
+            <button class="btn btn-primary" id="editUserBtn"><i class="bi bi-save-fill"></i> Save Changes</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modalContainer').appendChild(overlay);
+
+      const close = () => overlay.remove();
+      overlay.querySelector('[data-close]').addEventListener('click', close);
+      overlay.querySelector('[data-cancel]').addEventListener('click', close);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+      overlay.querySelector('#editUserBtn').addEventListener('click', async () => {
+        const password = overlay.querySelector('#editPassword').value;
+        const displayName = overlay.querySelector('#editDisplayName').value.trim();
+        const employeeId = overlay.querySelector('#editEmployeeId').value.trim();
+        const role = overlay.querySelector('#editRole').value;
+
+        try {
+          const updateData = { displayName, employeeId, role };
+          if (password) updateData.password = password;
+
+          await DB.updateUser(id, updateData);
+          Utils.toast('User updated', 'success');
+          close();
+          this.render();
+        } catch (err) {
+          Utils.toast(err.message, 'error');
+        }
+      });
+    }).catch(err => {
+      Utils.toast('Error loading user: ' + err.message, 'error');
+    });
+  },
+
+  async deleteUser(id) {
+    try {
+      const users = await DB.getUsers();
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+
+      const confirmed = await Utils.confirm(
+        `Delete user "${Utils.escapeHtml(user.username)}"? They will no longer be able to sign in.`,
+        'Delete User'
+      );
+      if (!confirmed) return;
+
+      await DB.deleteUser(id);
+      Utils.toast('User deleted', 'success');
+      this.render();
+    } catch (err) {
+      Utils.toast(err.message, 'error');
+    }
   },
 
   async loadStats() {
