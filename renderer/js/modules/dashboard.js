@@ -167,7 +167,7 @@ const Dashboard = {
     const ctx = document.getElementById('deptChart');
     if (!ctx) return;
 
-    // Check if Chart.js is available (works offline if already cached)
+    // Check if Chart.js is available (works if already cached)
     if (typeof Chart === 'undefined') {
       ctx.parentElement.innerHTML = `
         <div class="empty-state" style="padding:20px">

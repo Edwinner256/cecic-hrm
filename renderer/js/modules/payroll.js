@@ -617,7 +617,7 @@ const Payroll = {
 
   <div class="header">
     ${logoHtml}
-    <h1>${Utils.escapeHtml(company.companyName || 'Offline HRMS')}</h1>
+    <h1>${Utils.escapeHtml(company.companyName || 'CECIC HRMS')}</h1>
     <h2>PAYSLIP</h2>
     <div>${periodLabel}</div>
     ${company.companyAddress ? `<div class="address">${Utils.escapeHtml(company.companyAddress)}</div>` : ''}
@@ -674,7 +674,7 @@ const Payroll = {
   </div>
 
   <div class="footer">
-    CECIC, ${Utils.escapeHtml(company.companyName || 'Offline HRMS')} &mdash; Confidential &mdash; Generated ${dateStr}
+    CECIC, ${Utils.escapeHtml(company.companyName || 'CECIC HRMS')} &mdash; Confidential &mdash; Generated ${dateStr}
     ${company.companyAddress ? `<br/>${Utils.escapeHtml(company.companyAddress)}` : ''}
   </div>
 </body>

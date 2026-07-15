@@ -391,7 +391,7 @@ const App = {
       // Sidebar company name
       const sidebarName = document.getElementById('sidebarCompanyName');
       if (sidebarName) {
-        sidebarName.textContent = company.name || 'Offline Edition';
+        sidebarName.textContent = company.name || 'CECIC HRMS';
       }
 
       // Topbar logo
@@ -458,7 +458,7 @@ const App = {
         statusEl.innerHTML = '<i class="bi bi-cloud-check-fill"></i><span>Online</span>';
       } else {
         statusEl.className = 'connection-status offline';
-        statusEl.innerHTML = '<i class="bi bi-cloud-slash-fill"></i><span>Offline</span>';
+        statusEl.innerHTML = '<i class="bi bi-cloud-slash-fill"></i><span>Disconnected</span>';
       }
     };
 

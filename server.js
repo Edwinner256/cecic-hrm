@@ -176,7 +176,7 @@ function printBanner(actualPort) {
   console.log(`║  Local:    ${address.padEnd(37)}║`);
   console.log(`║  Network:  ${(networkUrl || 'N/A').padEnd(37)}║`);
   console.log('╠══════════════════════════════════════════════╣');
-  console.log('║  Features: Offline ✓  Printing ✓  Email ✓  ║');
+  console.log('║  Features: CECIC Online ✓  Printing ✓  Email ✓  ║');
   console.log('║  Open in any browser — works on mobile too  ║');
   console.log('╚══════════════════════════════════════════════╝');
   console.log('');

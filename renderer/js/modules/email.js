@@ -13,7 +13,7 @@ const Email = {
             <i class="bi ${online ? 'bi-cloud-check-fill' : 'bi-cloud-slash-fill'}"></i>
           </div>
           <div class="stat-info">
-            <h3>${online ? 'Online' : 'Offline'}</h3>
+            <h3>${online ? 'Online' : 'Disconnected'}</h3>
             <p>Internet Connection</p>
           </div>
         </div>
@@ -152,7 +152,7 @@ const Email = {
           <h2>${subject}</h2>
           <p>${message.replace(/\n/g, '<br/>')}</p>
           <hr style="margin-top:20px"/>
-          <p style="color:#666;font-size:12px">Sent from Offline HRMS</p>
+           <p style="color:#666;font-size:12px">Sent from CECIC HRMS</p>
         </div>`,
         smtpConfig: {
           host: settings.smtpHost,

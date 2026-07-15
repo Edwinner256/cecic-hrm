@@ -311,7 +311,7 @@ const PettyCash = {
   </div>
   <div class="header">
     ${logoHtml}
-    <h1>${Utils.escapeHtml(company.companyName || 'Offline HRMS')}</h1>
+    <h1>${Utils.escapeHtml(company.companyName || 'CECIC HRMS')}</h1>
     <h2>PETTY CASH VOUCHER</h2>
     <div style="font-size:12px;color:#57534e">Voucher #: PC-${String(id).padStart(4, '0')}</div>
   </div>
@@ -343,7 +343,7 @@ const PettyCash = {
     <span>Printed by: ${Utils.escapeHtml(printedBy)} | ${new Date(printedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
   </div>
   <div class="footer">
-    ${Utils.escapeHtml(company.companyName || 'Offline HRMS')} — Petty Cash Voucher — ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+    ${Utils.escapeHtml(company.companyName || 'CECIC HRMS')} — Petty Cash Voucher — ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
     ${company.companyAddress ? `<br/>${Utils.escapeHtml(company.companyAddress)}` : ''}
   </div>
 </body>
@@ -414,7 +414,7 @@ const PettyCash = {
 <body>
   <div class="header">
     ${logoHtml}
-    <h1>${Utils.escapeHtml(company.companyName || 'Offline HRMS')}</h1>
+    <h1>${Utils.escapeHtml(company.companyName || 'CECIC HRMS')}</h1>
     <h2>Petty Cash Report</h2>
     <div>As at ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
   </div>
@@ -429,7 +429,7 @@ const PettyCash = {
     <tbody>${rows}</tbody>
   </table>
   <div class="footer">
-    ${Utils.escapeHtml(company.companyName || 'Offline HRMS')} — Confidential — Printed ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+    ${Utils.escapeHtml(company.companyName || 'CECIC HRMS')} — Confidential — Printed ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
   </div>
 </body>
 </html>`;

@@ -202,7 +202,7 @@ const Settings = {
           <div class="detail-grid">
             <div class="detail-item">
               <span class="label">Application</span>
-              <span class="value">Offline HR Management System</span>
+              <span class="value">CECIC HR Management System</span>
             </div>
             <div class="detail-item">
               <span class="label">Version</span>
@@ -210,7 +210,7 @@ const Settings = {
             </div>
             <div class="detail-item">
               <span class="label">Storage</span>
-              <span class="value">IndexedDB (Local - Offline First)</span>
+              <span class="value">IndexedDB (Local)</span>
             </div>
             <div class="detail-item">
               <span class="label">Email</span>
@@ -649,8 +649,8 @@ const Settings = {
     try {
       const payload = {
         to: settings.companyEmail,
-        subject: 'Test Email from Offline HRMS',
-        html: '<h2>Test Email</h2><p>If you received this, your SMTP configuration is working correctly!</p><p>Sent from Offline HR Management System</p>',
+        subject: 'Test Email from CECIC HRMS',
+        html: '<h2>Test Email</h2><p>If you received this, your SMTP configuration is working correctly!</p><p>Sent from CECIC HR Management System</p>',
         smtpConfig: {
           host: settings.smtpHost,
           port: parseInt(settings.smtpPort || '587'),
